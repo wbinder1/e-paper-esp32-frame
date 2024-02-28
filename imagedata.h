@@ -24,5 +24,7 @@
  */
  
 extern const unsigned char gImage_7in3f[];
+extern const unsigned char Image7color[];
+
 
 /* FILE END */

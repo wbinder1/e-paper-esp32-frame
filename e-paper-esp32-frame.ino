@@ -25,14 +25,19 @@
 */
 
 #include <SPI.h>
+#include <FS.h>
+#include <SD.h>
 #include "imagedata.h"
 #include "epd7in3f.h"
-#include "LittleFS.h"
+
+// #include "LittleFS.h"
 
 Epd epd;
+#define SD_CS_PIN 5 // Change this to match your SD card CS pin!
 
 uint16_t width() { return EPD_WIDTH; }
 uint16_t height() { return EPD_HEIGHT; }
+SPIClass vspi(VSPI);
 
 //uint8_t output_buffer[EPD_WIDTH * EPD_HEIGHT / 4];
 
@@ -42,8 +47,11 @@ uint16_t height() { return EPD_HEIGHT; }
 
   uint16_t read16(fs::File &f) {
     uint16_t result;
+    Serial.println("read16 1");
     ((uint8_t *)&result)[0] = f.read(); // LSB
+    Serial.println("read16 2");
     ((uint8_t *)&result)[1] = f.read(); // MSB
+    Serial.println("read16 3");
     return result;
   }
 
@@ -58,16 +66,18 @@ uint16_t height() { return EPD_HEIGHT; }
 
 bool drawBmp(const char *filename) {
     fs::File bmpFS;
-
+    Serial.println("Drawing bitmap file: " + String(filename));
     // Open requested file on SD card
-    bmpFS = LittleFS.open(filename, "r");
+    bmpFS =  SD.open(filename);
+    Serial.println("File Opened");
 
     uint32_t seekOffset, headerSize, paletteSize = 0;
     int16_t row;
     uint8_t r, g, b;
     uint16_t bitDepth;
-
+    Serial.println("Reading file");
     uint16_t magic = read16(bmpFS);
+    Serial.println("Magic: " + String(magic, HEX));
     if (magic != ('B' | ('M' << 8))) { // File not found or not a BMP
       Serial.println(F("BMP not found!"));
       bmpFS.close();
@@ -118,6 +128,7 @@ bool drawBmp(const char *filename) {
     
     // row is decremented as the BMP image is drawn bottom up
     for (row = h-1; row >= 0; row--) {
+      Serial.print("row: "+String(row));
       epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3F_WHITE); // fill area on the left of pic white
       bmpFS.read(lineBuffer, sizeof(lineBuffer));
       uint8_t*  bptr = lineBuffer;
@@ -177,10 +188,29 @@ bool drawBmp(const char *filename) {
 
 void setup() {
     // put your setup code here, to run once:
-    LittleFS.begin();
+    // LittleFS.begin();
     delay(1000);
     Serial.begin(115200);
     delay(1000);
+    Serial.print("MOSI: ");
+    Serial.println(MOSI);
+    Serial.print("MISO: ");
+    Serial.println(MISO);
+    Serial.print("SCK: ");
+    Serial.println(SCK);
+    Serial.print("SS: ");
+    Serial.println(SS);  
+
+    // if(!SD.begin(SD_CS_PIN, hspi)){
+    if(!SD.begin(SD_CS_PIN, vspi)){
+
+      Serial.println("Card Mount Failed");
+      return;
+    }
+    delay(1000);
+
+    // testTXT();
+
     Serial.print("dfgdfgegherth");
     if (epd.Init() != 0) {
         Serial.print("eP init F");
@@ -188,13 +218,16 @@ void setup() {
     }else{
       Serial.print("eP init no F");
     }
+    // drawBmp("/bild.bmp");
+
+    SDTest();
 
     //Serial.print("eP Clr\r\n ");
-    epd.Clear(EPD_7IN3F_WHITE);
+    // epd.Clear(EPD_7IN3F_WHITE);
 
     // Serial.print("Show pic\r\n ");
     // epd.EPD_7IN3F_Display(gImage_7in3f);
-    // epd.EPD_7IN3F_Display_part(gImage_7in3f, 250, 150, 300, 180);
+    epd.EPD_7IN3F_Display_part(Image7color, 0, 0, 800, 480);
     // drawBmp("/bild.bmp");
     // //epd.EPD_7IN3F_Display_part(output_buffer, 0, 120, 800, 240);
     // delay(5000);
@@ -212,4 +245,43 @@ void loop() {
 
     // put your main code here, to run repeatedly:
 
+}
+void SDTest(){
+  Serial.println("SD Test");
+  File root = SD.open("/");  // open SD card main root
+  Serial.println("SD Files:" + String(root.name())); 
+
+  while (true) {
+    File entry =  root.openNextFile();  // open file
+    Serial.println(entry.name());  // print the file name
+
+    if (!entry) {
+      Serial.println("No more files");
+      // no more files
+      root.close();
+      return;
+    }
+ 
+    uint8_t nameSize = String(entry.name()).length();  // get file name size
+    String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
+ 
+    if ( str1.equalsIgnoreCase(".bmp") )  // if the file has '.bmp' extension
+      Serial.println(entry.name());  // print the file name
+ 
+    entry.close();  // close the file
+  }
+}
+void testTXT(){
+  Serial.println("Test TXT");
+  File file = SD.open("/test.txt");
+  if(!file){
+    Serial.println("Failed to open file for reading");
+    return;
+  }
+  
+  Serial.println("File Content:");
+  while(file.available()){
+    Serial.write(file.read());
+  }
+  file.close();
 }
