@@ -133,6 +133,8 @@ bool drawBmp(const char *filename) {
 
     uint32_t lineSize = ((bitDepth * w +31) >> 5) * 4;
     uint8_t lineBuffer[lineSize];
+    uint8_t nextLineBuffer[lineSize];
+    bmpFS.read(nextLineBuffer, sizeof(nextLineBuffer));
 
     epd.SendCommand(0x10); // start data frame
 
@@ -143,7 +145,10 @@ bool drawBmp(const char *filename) {
       // Serial.print("row: "+String(row));
       epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3F_WHITE); // fill area on the left of pic white
       bmpFS.read(lineBuffer, sizeof(lineBuffer));
+
       uint8_t*  bptr = lineBuffer;
+      uint8_t*  bnptr = nextLineBuffer;
+
       
       uint8_t output = 0;
       // Convert 24 to 16 bit colors while copying to output buffer.
@@ -170,6 +175,32 @@ bool drawBmp(const char *filename) {
         }
         uint8_t color;
         int indexColor = depalette(r, g, b);
+        int errorR = r - colorPallete[indexColor*3+0];
+        int errorG = g - colorPallete[indexColor*3+1];
+        int errorB = b - colorPallete[indexColor*3+2];
+        
+        if(col < w-1){
+          bptr[0] = bptr[0] + (7*errorR/16);
+          bptr[1] = bptr[1] + (7*errorG/16);
+          bptr[2] = bptr[2] + (7*errorB/16);
+        }
+        if(row > 0){
+          if(col > 0){
+            bnptr[-1] = bnptr[-1] + (3*errorR/16);
+            bnptr[-2] = bnptr[-2] + (3*errorG/16);
+            bnptr[-3] = bnptr[-3] + (3*errorB/16);
+          }
+          bnptr[0] = bnptr[0] + (5*errorR/16);
+          bnptr[1] = bnptr[1] + (5*errorR/16);
+          bnptr[2] = bnptr[2] + (5*errorR/16);
+
+          if(col < w-1){
+            bnptr[3] = bnptr[3] + (1*errorR/16);
+            bnptr[4] = bnptr[4] + (1*errorR/16);
+            bnptr[5] = bnptr[5] + (1*errorR/16);
+          }
+        }
+
         switch (indexColor)
         {
         case 0:
@@ -220,6 +251,8 @@ bool drawBmp(const char *filename) {
         }
       }
       epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3F_WHITE); // fill area on the right of pic white
+      memcpy(lineBuffer, nextLineBuffer, sizeof(lineBuffer));
+
     }
 
     epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_7IN3F_WHITE); // fill area below the pic white
@@ -280,7 +313,8 @@ void setup() {
     }else{
       Serial.print("eP init no F");
     }
-    drawBmp("/bild.bmp");
+    epd.Clear(EPD_7IN3F_WHITE);
+    drawBmp("/goggles.bmp");
 
     // SDTest();
 
