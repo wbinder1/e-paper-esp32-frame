@@ -39,6 +39,17 @@ uint16_t width() { return EPD_WIDTH; }
 uint16_t height() { return EPD_HEIGHT; }
 SPIClass vspi(VSPI);
 
+uint8_t colorPallete[8*3] = {
+	0, 0, 0,
+	255, 255, 255,
+	67, 138, 28,
+	100, 64, 255,
+	191, 0, 0,
+	255, 243, 56,
+	232, 126, 0,
+	194 ,164 , 244 
+};
+
 //uint8_t output_buffer[EPD_WIDTH * EPD_HEIGHT / 4];
 
 // These read 16- and 32-bit types from the SD card file.
@@ -92,6 +103,7 @@ bool drawBmp(const char *filename) {
     uint32_t h = read32(bmpFS); // height
     read16(bmpFS); // color planes (must be 1)
     bitDepth = read16(bmpFS);
+    Serial.println("Bit Depth: " + String(bitDepth));
 
     if (read32(bmpFS) != 0 || (bitDepth != 24 && bitDepth != 1 && bitDepth != 4 && bitDepth != 8)) {
       Serial.println(F("BMP format not recognized."));
@@ -128,7 +140,7 @@ bool drawBmp(const char *filename) {
     
     // row is decremented as the BMP image is drawn bottom up
     for (row = h-1; row >= 0; row--) {
-      Serial.print("row: "+String(row));
+      // Serial.print("row: "+String(row));
       epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3F_WHITE); // fill area on the left of pic white
       bmpFS.read(lineBuffer, sizeof(lineBuffer));
       uint8_t*  bptr = lineBuffer;
@@ -156,18 +168,49 @@ bool drawBmp(const char *filename) {
           }
           b = c; g = c >> 8; r = c >> 16;
         }
-        uint8_t color = EPD_7IN3F_WHITE;
-        if (r <= 128 && g <= 128 && b <= 128) {
+        uint8_t color;
+        int indexColor = depalette(r, g, b);
+        switch (indexColor)
+        {
+        case 0:
           color = EPD_7IN3F_BLACK;
-        } else if (r > 200 && g > 200 && b > 200) {
+          break;
+        case 1:
           color = EPD_7IN3F_WHITE;
-        } else if (b > 128) {
-          color = EPD_7IN3F_BLUE;
-        } else if (g > 128 && r <= 128) {
+          break;
+        case 2:
           color = EPD_7IN3F_GREEN;
-        } else {
-          color = (g > 140) ? EPD_7IN3F_YELLOW : (g > 64) ? EPD_7IN3F_ORANGE : EPD_7IN3F_RED;
+          break;
+        case 3:
+          color = EPD_7IN3F_BLUE;
+          break;
+        case 4:
+          color = EPD_7IN3F_RED;
+          break;
+        case 5:
+          color = EPD_7IN3F_YELLOW;
+          break;
+        case 6:
+          color = EPD_7IN3F_ORANGE;
+          break;
+        case 7:
+          color = EPD_7IN3F_WHITE;
+          break;
+        
+       
         }
+        // uint8_t color = EPD_7IN3F_WHITE;
+        // if (r <= 128 && g <= 128 && b <= 128) {
+        //   color = EPD_7IN3F_BLACK;
+        // } else if (r > 200 && g > 200 && b > 200) {
+        //   color = EPD_7IN3F_WHITE;
+        // } else if (b > 128) {
+        //   color = EPD_7IN3F_BLUE;
+        // } else if (g > 128 && r <= 128) {
+        //   color = EPD_7IN3F_GREEN;
+        // } else {
+        //   color = (g > 140) ? EPD_7IN3F_YELLOW : (g > 64) ? EPD_7IN3F_ORANGE : EPD_7IN3F_RED;
+        // }
         uint32_t buf_location = (row*(width()/2)+col/2);
         if (col & 0x01) {
           output |= color;
@@ -185,6 +228,25 @@ bool drawBmp(const char *filename) {
     epd.TurnOnDisplay();
     return true;
   }
+
+int depalette( uint8_t r, uint8_t g, uint8_t b ){
+	int p;
+	int mindiff = 100000000;
+	int bestc = 0;
+	for( p = 0; p < sizeof(colorPallete)/3; p++ )
+	{
+		int diffr = ((int)r) - ((int)colorPallete[p*3+0]);
+		int diffg = ((int)g) - ((int)colorPallete[p*3+1]);
+		int diffb = ((int)b) - ((int)colorPallete[p*3+2]);
+		int diff = (diffr*diffr) + (diffg*diffg) + (diffb * diffb);
+		if( diff < mindiff )
+		{
+			mindiff = diff;
+			bestc = p;
+		}
+	}
+	return bestc;
+}
 
 void setup() {
     // put your setup code here, to run once:
@@ -220,14 +282,16 @@ void setup() {
     }
     drawBmp("/bild.bmp");
 
-    SDTest();
+    // SDTest();
 
     //Serial.print("eP Clr\r\n ");
     // epd.Clear(EPD_7IN3F_WHITE);
+    // epd.Clear(EPD_7IN3F_CLEAN);
+
 
     // Serial.print("Show pic\r\n ");
     // epd.EPD_7IN3F_Display(gImage_7in3f);
-    epd.EPD_7IN3F_Display_part(Image7color, 0, 0, 800, 480);
+    // epd.EPD_7IN3F_Display_part(Image7color, 0, 0, 800, 480);
     // drawBmp("/bild.bmp");
     // //epd.EPD_7IN3F_Display_part(output_buffer, 0, 120, 800, 240);
     // delay(5000);
