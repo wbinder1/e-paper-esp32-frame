@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Arduino",
-            "compilerPath": "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\bin\\xtensa-esp32-elf-g++",
+            "compilerPath": "C:\\Users\\jeros\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\bin\\xtensa-esp32-elf-g++",
             "compilerArgs": [
                 "-mlongcalls",
                 "-Wno-frame-address",
@@ -229,7 +229,7 @@
                 "c:\\users\\tobias\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\xtensa-esp32-elf\\include"
             ],
             "forcedInclude": [
-                "C:\\Users\\Tobias\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\2.0.11\\cores\\esp32\\Arduino.h"
+                "C:\\Users\\jeros\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\2.0.11\\cores\\esp32\\Arduino.h"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11",
