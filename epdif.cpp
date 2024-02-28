@@ -27,6 +27,8 @@
 
 #include "epdif.h"
 #include <SPI.h>
+SPIClass hspi(HSPI);
+
 
 EpdIf::EpdIf() {
 };
@@ -48,7 +50,7 @@ void EpdIf::DelayMs(unsigned int delaytime) {
 
 void EpdIf::SpiTransfer(unsigned char data) {
     digitalWrite(CS_PIN, LOW);
-    SPI.transfer(data);
+    hspi.transfer(data);
     digitalWrite(CS_PIN, HIGH);
 }
 
@@ -57,8 +59,8 @@ int EpdIf::IfInit(void) {
     pinMode(RST_PIN, OUTPUT);
     pinMode(DC_PIN, OUTPUT);
     pinMode(BUSY_PIN, INPUT); 
-    SPI.begin(HSPI_SCLK, -1, HSPI_COPI);
-    SPI.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
+    hspi.begin(HSPI_SCLK, -1, HSPI_COPI);
+    hspi.beginTransaction(SPISettings(2000000, MSBFIRST, SPI_MODE0));
     
     return 0;
 }

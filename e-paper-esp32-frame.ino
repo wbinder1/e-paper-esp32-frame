@@ -218,7 +218,7 @@ void setup() {
     }else{
       Serial.print("eP init no F");
     }
-    // drawBmp("/bild.bmp");
+    drawBmp("/bild.bmp");
 
     SDTest();
 
