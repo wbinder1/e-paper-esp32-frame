@@ -325,10 +325,10 @@ void setup() {
     Serial.println(SS);  
 
     // if(!SD.begin(SD_CS_PIN, hspi)){
-    if(!SD.begin(SD_CS_PIN, vspi)){
+    while(!SD.begin(SD_CS_PIN, vspi)){
 
       Serial.println("Card Mount Failed");
-      return;
+      delay(1000);
     }
     delay(1000);
 
@@ -342,8 +342,10 @@ void setup() {
       Serial.print("eP init no F");
     }
     // epd.Clear(EPD_7IN3F_WHITE);
-    drawBmp("/bild.bmp");
-    // drawBmp("/goggles.bmp");
+    // drawBmp("/bild.bmp");
+    // drawBmp("/duett.bmp");
+    // drawBmp("/bunt.bmp");
+    drawBmp("/lor_party.bmp");
 
     // SDTest();
 
