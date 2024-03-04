@@ -1,0 +1,8 @@
+# e-paper-esp32-frame
+
+This library provides a set of functions and utilities for controlling e-paper displays with an ESP32 microcontroller. It simplifies the process of displaying text, images, and graphics on e-paper screens.
+
+External Libraries Used:
+- FS (version 2.0.0)
+- SD(esp32)  (version 2.0.0)
+- SPI(esp32) (version 2.0.0)

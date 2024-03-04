@@ -310,23 +310,25 @@ int depalette( uint8_t r, uint8_t g, uint8_t b ){
 }
 
 void setup() {
-    // put your setup code here, to run once:
-    // LittleFS.begin();
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_OFF);
+    
     delay(1000);
     Serial.begin(115200);
     delay(1000);
-    Serial.print("MOSI: ");
-    Serial.println(MOSI);
-    Serial.print("MISO: ");
-    Serial.println(MISO);
-    Serial.print("SCK: ");
-    Serial.println(SCK);
-    Serial.print("SS: ");
-    Serial.println(SS);  
 
-    // if(!SD.begin(SD_CS_PIN, hspi)){
+    esp_sleep_wakeup_cause_t wakeup_reason;
+    wakeup_reason = esp_sleep_get_wakeup_cause();
+
+    if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
+      Serial.println("Woke up from deep sleep due to timer.");
+    } else {
+      Serial.println("Did not wake up from deep sleep.");
+    }
+    
     while(!SD.begin(SD_CS_PIN, vspi)){
-
       Serial.println("Card Mount Failed");
       delay(1000);
     }
@@ -345,9 +347,9 @@ void setup() {
     // drawBmp("/bild.bmp");
     // drawBmp("/duett.bmp");
     // drawBmp("/bunt.bmp");
-    drawBmp("/lor_party.bmp");
+    // drawBmp("/lor_party.bmp");
 
-    // SDTest();
+    SDTest();
 
     //Serial.print("eP Clr\r\n ");
     // epd.Clear(EPD_7IN3F_WHITE);
@@ -369,20 +371,24 @@ void setup() {
 }
 
 void loop() {
-    Serial.println("in loop");
-    delay(1000);
-
+    hibernate();
     // put your main code here, to run repeatedly:
+}
+void hibernate() {
+    Serial.println("start sleep");
+
+    
+    //Deepsleep for 5 seconds
+    esp_deep_sleep(5e6);
+    Serial.println("end sleep");
 
 }
 void SDTest(){
   Serial.println("SD Test");
   File root = SD.open("/");  // open SD card main root
-  Serial.println("SD Files:" + String(root.name())); 
 
   while (true) {
     File entry =  root.openNextFile();  // open file
-    Serial.println(entry.name());  // print the file name
 
     if (!entry) {
       Serial.println("No more files");
