@@ -29,6 +29,9 @@
 #include <SD.h>
 #include "imagedata.h"
 #include "epd7in3f.h"
+#include <Preferences.h>
+
+Preferences preferences;
 
 // #include "LittleFS.h"
 
@@ -58,11 +61,8 @@ uint8_t colorPallete[8*3] = {
 
   uint16_t read16(fs::File &f) {
     uint16_t result;
-    Serial.println("read16 1");
     ((uint8_t *)&result)[0] = f.read(); // LSB
-    Serial.println("read16 2");
     ((uint8_t *)&result)[1] = f.read(); // MSB
-    Serial.println("read16 3");
     return result;
   }
 
@@ -75,20 +75,181 @@ uint8_t colorPallete[8*3] = {
     return result;
   }
 
+void setup() {
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_OFF);
+    
+    delay(1000);
+    Serial.begin(115200);
+    preferences.begin("e-paper", false);
+    delay(1000);
+    // unsigned int counter = preferences.getUInt("imageIndex", 0);
+      
+    // // Increase counter by 1
+    // counter++;
+
+    // // Print the counter to Serial Monitor
+    // Serial.printf("Current counter value: %u\n", counter);
+
+    // // Store the counter to the Preferences
+    // preferences.putUInt("imageIndex", counter);
+
+
+
+    esp_sleep_wakeup_cause_t wakeup_reason;
+    wakeup_reason = esp_sleep_get_wakeup_cause();
+
+    if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
+      Serial.println("Woke up from deep sleep due to timer.");
+    } else {
+      Serial.println("Did not wake up from deep sleep.");
+    }
+    
+    while(!SD.begin(SD_CS_PIN, vspi)){
+      Serial.println("Card Mount Failed");
+      delay(1000);
+    }
+    delay(1000);
+
+    // testTXT();
+
+    if (epd.Init() != 0) {
+        Serial.println("eP init F");
+        return;
+    }else{
+      Serial.println("eP init no F");
+    }
+    // epd.Clear(EPD_7IN3F_WHITE);
+    // drawBmp("/bild.bmp");
+    // drawBmp("/duett.bmp");
+    // drawBmp("/bunt.bmp");
+    // drawBmp("/lor_party.bmp");
+
+    checkSDFiles();
+    String file = getNextFile();
+    drawBmp(file.c_str());
+
+    //Serial.print("eP Clr\r\n ");
+    // epd.Clear(EPD_7IN3F_WHITE);
+    // epd.Clear(EPD_7IN3F_CLEAN);
+
+
+    // Serial.print("Show pic\r\n ");
+    // epd.EPD_7IN3F_Display(gImage_7in3f);
+    // epd.EPD_7IN3F_Display_part(Image7color, 0, 0, 800, 480);
+    // drawBmp("/bild.bmp");
+    // //epd.EPD_7IN3F_Display_part(output_buffer, 0, 120, 800, 240);
+    // delay(5000);
+    // //Serial.print("draw 7 color block\r\n ");
+    // //epd.EPD_7IN3F_Show7Block();
+    // delay(2000);
+    // Serial.print("Done\r\n ");
+    
+    // epd.Sleep();
+}
+
+void loop() {
+    hibernate();
+    // put your main code here, to run repeatedly:
+}
+void hibernate() {
+    Serial.println("start sleep");
+
+    
+    //Deepsleep for 5 seconds
+    esp_deep_sleep(5e6);
+    Serial.println("end sleep");
+
+}
+void checkSDFiles(){
+  Serial.println("Check SD File");
+  File root = SD.open("/");  // open SD card main root
+  String fileString = "";
+  u_int16_t fileCount = 0;  
+  bool hasEntry = true;
+
+  while (hasEntry) {
+    File entry =  root.openNextFile();  // open file
+
+    if (!entry) {
+      Serial.println("No more files");
+      // no more files
+      root.close();
+      hasEntry = false;
+      break;
+    }
+ 
+    uint8_t nameSize = String(entry.name()).length();  // get file name size
+    String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
+ 
+    if ( str1.equalsIgnoreCase(".bmp") ) {  // if the file has '.bmp' extension
+      fileCount++;  // increment file count 
+      fileString += String(entry.name()) + ",";  // add file name to fileString
+      Serial.println(String(entry.name()));  // print the file name
+    }
+ 
+    entry.close();  // close the file
+  }
+  if(preferences.getString("fileString", "") != fileString){
+    preferences.putString("fileString", fileString);
+    preferences.putUInt("fileCount", fileCount);
+    preferences.putUInt("imageIndex", random(fileCount-1));
+  }
+}
+String getNextFile(){
+  String fileString = preferences.getString("fileString", "");
+  unsigned int fileCount = preferences.getUInt("fileCount", 0);
+  unsigned int imageIndex = preferences.getUInt("imageIndex", 0);
+  Serial.println("File String: " + fileString);
+  Serial.println("File Count: " + String(fileCount));
+  Serial.println("Image Index: " + String(imageIndex));
+
+  String files[fileCount];
+    int i = 0;
+    while(fileString.indexOf(",") > 0){
+      files[i] = fileString.substring(0, fileString.indexOf(","));
+      fileString = fileString.substring(fileString.indexOf(",")+1);
+      i++;
+    }
+    Serial.println("Files: ");
+    for(int i = 0; i < fileCount; i++){
+      Serial.println(files[i]);
+    }
+
+    randomSeed(fileCount);
+
+    const size_t n = sizeof(files) / sizeof(files[0]);
+
+    for (size_t i = 0; i < n - 1; i++)
+    {
+        size_t j = random(0, n - i);
+        String t = files[i];
+        files[i] = files[j];
+        files[j] = t;
+    }
+    unsigned int temp = imageIndex; 
+    if(imageIndex >= fileCount - 1){
+      imageIndex = 0;
+    }else{
+      imageIndex++;
+    }
+    preferences.putUInt("imageIndex", imageIndex);
+
+    return "/" + files[temp];
+}
+
 bool drawBmp(const char *filename) {
     fs::File bmpFS;
     Serial.println("Drawing bitmap file: " + String(filename));
     // Open requested file on SD card
     bmpFS =  SD.open(filename);
-    Serial.println("File Opened");
-
     uint32_t seekOffset, headerSize, paletteSize = 0;
     int16_t row;
     uint8_t r, g, b;
     uint16_t bitDepth;
-    Serial.println("Reading file");
     uint16_t magic = read16(bmpFS);
-    Serial.println("Magic: " + String(magic, HEX));
     if (magic != ('B' | ('M' << 8))) { // File not found or not a BMP
       Serial.println(F("BMP not found!"));
       bmpFS.close();
@@ -103,7 +264,6 @@ bool drawBmp(const char *filename) {
     uint32_t h = read32(bmpFS); // height
     read16(bmpFS); // color planes (must be 1)
     bitDepth = read16(bmpFS);
-    Serial.println("Bit Depth: " + String(bitDepth));
 
     if (read32(bmpFS) != 0 || (bitDepth != 24 && bitDepth != 1 && bitDepth != 4 && bitDepth != 8)) {
       Serial.println(F("BMP format not recognized."));
@@ -112,7 +272,6 @@ bool drawBmp(const char *filename) {
     }
 
     uint32_t palette[256];
-    Serial.println("Palettes:");
     if (bitDepth <= 8) // 1,4,8 bit bitmap: read color palette
     {
       read32(bmpFS); read32(bmpFS); read32(bmpFS); // size, w resolution, h resolution
@@ -121,7 +280,6 @@ bool drawBmp(const char *filename) {
       bmpFS.seek(14 + headerSize); // start of color palette
       for (uint16_t i = 0; i < paletteSize; i++) {
         palette[i] = read32(bmpFS);
-        Serial.println(palette[i], HEX);
       }
     }
 
@@ -309,114 +467,3 @@ int depalette( uint8_t r, uint8_t g, uint8_t b ){
 	return bestc;
 }
 
-void setup() {
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_OFF);
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
-    esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_OFF);
-    
-    delay(1000);
-    Serial.begin(115200);
-    delay(1000);
-
-    esp_sleep_wakeup_cause_t wakeup_reason;
-    wakeup_reason = esp_sleep_get_wakeup_cause();
-
-    if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
-      Serial.println("Woke up from deep sleep due to timer.");
-    } else {
-      Serial.println("Did not wake up from deep sleep.");
-    }
-    
-    while(!SD.begin(SD_CS_PIN, vspi)){
-      Serial.println("Card Mount Failed");
-      delay(1000);
-    }
-    delay(1000);
-
-    // testTXT();
-
-    Serial.print("dfgdfgegherth");
-    if (epd.Init() != 0) {
-        Serial.print("eP init F");
-        return;
-    }else{
-      Serial.print("eP init no F");
-    }
-    // epd.Clear(EPD_7IN3F_WHITE);
-    // drawBmp("/bild.bmp");
-    // drawBmp("/duett.bmp");
-    // drawBmp("/bunt.bmp");
-    // drawBmp("/lor_party.bmp");
-
-    SDTest();
-
-    //Serial.print("eP Clr\r\n ");
-    // epd.Clear(EPD_7IN3F_WHITE);
-    // epd.Clear(EPD_7IN3F_CLEAN);
-
-
-    // Serial.print("Show pic\r\n ");
-    // epd.EPD_7IN3F_Display(gImage_7in3f);
-    // epd.EPD_7IN3F_Display_part(Image7color, 0, 0, 800, 480);
-    // drawBmp("/bild.bmp");
-    // //epd.EPD_7IN3F_Display_part(output_buffer, 0, 120, 800, 240);
-    // delay(5000);
-    // //Serial.print("draw 7 color block\r\n ");
-    // //epd.EPD_7IN3F_Show7Block();
-    // delay(2000);
-    // Serial.print("Done\r\n ");
-    
-    // epd.Sleep();
-}
-
-void loop() {
-    hibernate();
-    // put your main code here, to run repeatedly:
-}
-void hibernate() {
-    Serial.println("start sleep");
-
-    
-    //Deepsleep for 5 seconds
-    esp_deep_sleep(5e6);
-    Serial.println("end sleep");
-
-}
-void SDTest(){
-  Serial.println("SD Test");
-  File root = SD.open("/");  // open SD card main root
-
-  while (true) {
-    File entry =  root.openNextFile();  // open file
-
-    if (!entry) {
-      Serial.println("No more files");
-      // no more files
-      root.close();
-      return;
-    }
- 
-    uint8_t nameSize = String(entry.name()).length();  // get file name size
-    String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
- 
-    if ( str1.equalsIgnoreCase(".bmp") )  // if the file has '.bmp' extension
-      Serial.println(entry.name());  // print the file name
- 
-    entry.close();  // close the file
-  }
-}
-void testTXT(){
-  Serial.println("Test TXT");
-  File file = SD.open("/test.txt");
-  if(!file){
-    Serial.println("Failed to open file for reading");
-    return;
-  }
-  
-  Serial.println("File Content:");
-  while(file.available()){
-    Serial.write(file.read());
-  }
-  file.close();
-}
