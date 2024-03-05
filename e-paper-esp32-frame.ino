@@ -30,6 +30,7 @@
 #include "imagedata.h"
 #include "epd7in3f.h"
 #include <Preferences.h>
+#include <algorithm>
 
 Preferences preferences;
 
@@ -109,7 +110,7 @@ void setup() {
     
     while(!SD.begin(SD_CS_PIN, vspi)){
       Serial.println("Card Mount Failed");
-      delay(1000);
+      ESP.restart();
     }
     delay(1000);
 
@@ -122,7 +123,7 @@ void setup() {
       Serial.println("eP init no F");
     }
     // epd.Clear(EPD_7IN3F_WHITE);
-    // drawBmp("/bild.bmp");
+    //drawBmp("/bild.bmp");
     // drawBmp("/duett.bmp");
     // drawBmp("/bunt.bmp");
     // drawBmp("/lor_party.bmp");
@@ -318,12 +319,15 @@ bool drawBmp(const char *filename) {
 
     // row is decremented as the BMP image is drawn bottom up
     bmpFS.read(lineBuffer, sizeof(lineBuffer));
+    //reverse linBuffer with the alorithm library 
+    std::reverse(lineBuffer, lineBuffer + sizeof(lineBuffer));
 
     for (row = h-1; row >= 0; row--) {
       // Serial.print("row: "+String(row));
       epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3F_WHITE); // fill area on the left of pic white
       if(row != 0){
         bmpFS.read(nextLineBuffer, sizeof(nextLineBuffer));
+        std::reverse(nextLineBuffer, nextLineBuffer + sizeof(nextLineBuffer));
       }
       uint8_t*  bptr = lineBuffer;
       uint8_t*  bnptr = nextLineBuffer;
@@ -334,9 +338,9 @@ bool drawBmp(const char *filename) {
       for (uint16_t col = 0; col < w; col++)
       {
         if (bitDepth == 24) {
-          b = *bptr++;
-          g = *bptr++;
           r = *bptr++;
+          g = *bptr++;
+          b = *bptr++;
           bnptr += 3;
         } else {
           uint32_t c = 0;
@@ -365,25 +369,25 @@ bool drawBmp(const char *filename) {
       
         
       if(col < w-1){
-          bptr[0] = constrain(bptr[0] + (7*errorB/16), 0, 255);
+          bptr[0] = constrain(bptr[0] + (7*errorR/16), 0, 255);
           bptr[1] = constrain(bptr[1] + (7*errorG/16), 0, 255);
-          bptr[2] = constrain(bptr[2] + (7*errorR/16), 0, 255);
+          bptr[2] = constrain(bptr[2] + (7*errorB/16), 0, 255);
       }
 
       if(row > 0){
           if(col > 0){
-              bnptr[-4] = constrain(bnptr[-4] + (3*errorB/16), 0, 255);
+              bnptr[-4] = constrain(bnptr[-4] + (3*errorR/16), 0, 255);
               bnptr[-5] = constrain(bnptr[-5] + (3*errorG/16), 0, 255);
-              bnptr[-6] = constrain(bnptr[-6] + (3*errorR/16), 0, 255);
+              bnptr[-6] = constrain(bnptr[-6] + (3*errorB/16), 0, 255);
           }
-          bnptr[-1] = constrain(bnptr[-1] + (5*errorB/16), 0, 255);
+          bnptr[-1] = constrain(bnptr[-1] + (5*errorR/16), 0, 255);
           bnptr[-2] = constrain(bnptr[-2] + (5*errorG/16), 0, 255);
-          bnptr[-3] = constrain(bnptr[-3] + (5*errorR/16), 0, 255);
+          bnptr[-3] = constrain(bnptr[-3] + (5*errorB/16), 0, 255);
 
           if(col < w-1){
-              bnptr[0] = constrain(bnptr[0] + (1*errorB/16), 0, 255);
+              bnptr[0] = constrain(bnptr[0] + (1*errorR/16), 0, 255);
               bnptr[1] = constrain(bnptr[1] + (1*errorG/16), 0, 255);
-              bnptr[2] = constrain(bnptr[2] + (1*errorR/16), 0, 255);
+              bnptr[2] = constrain(bnptr[2] + (1*errorB/16), 0, 255);
           }
       }
 
