@@ -60,7 +60,7 @@ class ImageHandler:
                 # Open the image file
                 img = self.getAdaptedImage(i)
                 print(self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], self.fileSizes[i]["x"] - self.fileSizes[i]["x_offset"], self.fileSizes[i]["y"] - self.fileSizes[i]["y_offset"])
-                img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], self.fileSizes[i]["x"] - self.fileSizes[i]["x_offset"], self.fileSizes[i]["y"] - self.fileSizes[i]["y_offset"]))
+                img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], 800 + self.fileSizes[i]["x_offset"], 480 + self.fileSizes[i]["y_offset"]))
 
                 # Save the image as BMP
                 img.save(self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp")
