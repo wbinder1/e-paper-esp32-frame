@@ -51,13 +51,9 @@ class ImageApp:
                                #, command=self.increaseSize
                                )
         buttonPlus.grid(row=3, column=1, sticky="nsew")
-        buttonRotateLeft = tk.Button(self.left_frame, text="⟲"
-                                     , command=lambda :self.imageHandler.rotateImage(90)
-                                     )
+        buttonRotateLeft = tk.Button(self.left_frame, text="⟲", command=lambda :self.imageHandler.rotateImage(90))
         buttonRotateLeft.grid(row=4, column=0, sticky="nsew")
-        buttonRotateRight = tk.Button(self.left_frame, text="⟳"
-                                      , command=lambda :self.imageHandler.rotateImage(-90)
-                                      )
+        buttonRotateRight = tk.Button(self.left_frame, text="⟳", command=lambda :self.imageHandler.rotateImage(-90))
         buttonRotateRight.grid(row=4, column=1, sticky="nsew")
 
 
@@ -74,25 +70,14 @@ class ImageApp:
         # Place the frame inside the left frame
         self.arrow_frame.grid(row=5, column=0, columnspan=2, sticky="nsew")
         # Create the arrows inside the frame
-        buttonTop = tk.Button(self.arrow_frame, text="↑"
-                                , command= lambda :self.imageHandler.changeOffset(0,1)
-                             )
+        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0,1))
         buttonTop.grid(row=0, column=1, sticky="nsew")
-        buttonLeft = tk.Button(self.arrow_frame, text="←"
-                                , command= lambda :self.imageHandler.changeOffset(1,0)
-                              )
+        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(1,0))
         buttonLeft.grid(row=1, column=0, sticky="nsew")
-        buttonRight = tk.Button(self.arrow_frame, text="→"
-                                , command= lambda :self.imageHandler.changeOffset(-1,0)
-                               )
+        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(-1,0))
         buttonRight.grid(row=1, column=2, sticky="nsew")
-        buttonBottom = tk.Button(self.arrow_frame, text="↓"
-                                , command= lambda :self.imageHandler.changeOffset(0,-1)
-                                )
+        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0,-1))
         buttonBottom.grid(row=2, column=1, sticky="nsew")
-
-
-
 
         self.right_frame = tk.Frame(self.root)
         self.right_frame.grid(row=0, column=1)
