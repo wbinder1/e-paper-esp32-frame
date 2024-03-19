@@ -28,13 +28,11 @@ class ImageHandler:
             return
 
         # Put the fileNames into a scrollable listbox
-        listbox = tk.Listbox(self.main.left_frame, selectmode=tk.SINGLE)
-        listbox.pack(fill=tk.BOTH, expand=True)
         for filename in self.fileNames:
             self.setfileSize(filename)
-            listbox.insert(tk.END, filename.split('/')[-1])
-        listbox.bind('<<ListboxSelect>>', self.on_selection_change)
-        listbox.selection_set(0)
+            self.main.listbox.insert(tk.END, filename.split('/')[-1])
+        self.main.listbox.bind('<<ListboxSelect>>', self.on_selection_change)
+        self.main.listbox.selection_set(0)
         self.canvasImage(0)
 
     def exportImages(self):

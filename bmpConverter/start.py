@@ -29,15 +29,36 @@ class ImageApp:
 
         self.left_frame.grid(row=0, column=0)
 
-        # Create two buttons inside the frame
+        # Create the left buttons and lists inside the frame
         buttonLoading = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages)
-        # buttonLoading.place(relx=0.5, rely=0.5, anchor='center')
         buttonLoading.grid(row=0, column=0, sticky="nsew")
-        # buttonLoading.pack()
         buttonExport = tk.Button(self.left_frame, text="Bilder Exportieren", command=self.imageHandler.exportImages)
-        #buttonExport.place(relx=0.75, rely=0.75, anchor='center')  
         buttonExport.grid(row=0, column=1, sticky="nsew")
-        # buttonExport.pack()
+        self.listbox = tk.Listbox(self.left_frame, selectmode=tk.SINGLE)
+        self.listbox.grid(row=1, column=0, columnspan=2, sticky="nsew")
+        buttonDelete = tk.Button(self.left_frame, text="Löschen"
+                                #   ,command=self.deleteImage
+                                 )
+        buttonDelete.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        buttonMinus = tk.Button(self.left_frame, text="-"
+                                #, command=self.decreaseSize
+                                )
+
+        buttonMinus.grid(row=3, column=0, sticky="nsew")
+        buttonPlus = tk.Button(self.left_frame, text="+"
+                               #, command=self.increaseSize
+                               )
+        buttonPlus.grid(row=3, column=1, sticky="nsew")
+        buttonRotateLeft = tk.Button(self.left_frame, text="⟲"
+                                     #, command=self.rotateLeft
+                                     )
+        buttonRotateLeft.grid(row=4, column=0, sticky="nsew")
+        buttonRotateRight = tk.Button(self.left_frame, text="⟳"
+                                      #, command=self.rotateRight
+                                      )
+        buttonRotateRight.grid(row=4, column=1, sticky="nsew")
+
+
 
         self.right_frame = tk.Frame(self.root)
         self.right_frame.grid(row=0, column=1)
