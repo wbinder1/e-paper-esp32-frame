@@ -52,11 +52,11 @@ class ImageApp:
                                )
         buttonPlus.grid(row=3, column=1, sticky="nsew")
         buttonRotateLeft = tk.Button(self.left_frame, text="⟲"
-                                     #, command=self.rotateLeft
+                                     , command=lambda :self.imageHandler.rotateImage(90)
                                      )
         buttonRotateLeft.grid(row=4, column=0, sticky="nsew")
         buttonRotateRight = tk.Button(self.left_frame, text="⟳"
-                                      #, command=self.rotateRight
+                                      , command=lambda :self.imageHandler.rotateImage(-90)
                                       )
         buttonRotateRight.grid(row=4, column=1, sticky="nsew")
 

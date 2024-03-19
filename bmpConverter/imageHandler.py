@@ -6,6 +6,7 @@ from tkinter import Tk, messagebox
 
 class ImageHandler:
     main = None
+    imageSelected = None
 
     def __init__(self, main):
         self.main = main
@@ -28,10 +29,13 @@ class ImageHandler:
             return
 
         # Put the fileNames into a scrollable listbox
+        index = 0
         for filename in self.fileNames:
-            self.setfileSize(filename)
+            self.initImage(index)
             self.main.listbox.insert(tk.END, filename.split('/')[-1])
+            index += 1
         self.main.listbox.bind('<<ListboxSelect>>', self.on_selection_change)
+        self.imageSelected = 0
         self.main.listbox.selection_set(0)
         self.canvasImage(0)
 
@@ -54,7 +58,7 @@ class ImageHandler:
                 return
             for i in range(len(self.fileNames)):
                 # Open the image file
-                img = Image.open(self.fileNames[i])
+                img = self.getAdaptedImage(i)
 
                 # Save the image as BMP
                 img.save(self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp")
@@ -68,22 +72,52 @@ class ImageHandler:
     def on_selection_change(self, event):
         selection = event.widget.curselection()
         if selection:
-            self.canvasImage(selection[0])
+            self.imageSelected = selection[0]
+            self.canvasImage(self.imageSelected)
 
-    def setfileSize(self, filepath):
-        img = Image.open(filepath)
-        aspect_ratio = img.width / img.height
-        new_width = 800
-        new_height = round(new_width / aspect_ratio)
-        if new_height < 480:
-            new_height = 480
+    def initImage(self, index):
+        self.fileSizes.append({'x': 0, 'y': 0, 'rotate' : 0})
+        self.setImageSize(index)
+
+    def setImageSize(self, index):
+        img = Image.open(self.fileNames[index])
+        if(self.fileSizes[index]["rotate"]%180 != 0):            
+            aspect_ratio = img.width / img.height
+            new_height = 800
             new_width = round(new_height * aspect_ratio)
-        self.fileSizes.append({'x': new_width, 'y': new_height})
+            if new_width < 480:
+                new_width = 480
+                new_height = round(new_width / aspect_ratio)
+        else:
+            aspect_ratio = img.width / img.height
+
+            new_width = 800
+            new_height = round(new_width / aspect_ratio)
+            if new_height < 480:
+                new_height = 480
+                new_width = round(new_height * aspect_ratio)
+
+        self.fileSizes[index]["x"] = new_width
+        self.fileSizes[index]["y"] = new_height
+
+    def getAdaptedImage(self,index):
+        img = Image.open(self.fileNames[index])
+        img = img.rotate(self.fileSizes[index]["rotate"])
+        img = img.resize((self.fileSizes[index]["x"], self.fileSizes[index]["y"]))
+
+        return img
+    def rotateImage(self, angle):
+        print(self.imageSelected)
+        if(self.imageSelected == None):
+            return
+        self.fileSizes[self.imageSelected]["rotate"] += angle
+        self.setImageSize(self.imageSelected)
+        self.canvasImage(self.imageSelected)
 
     def canvasImage(self, index):
-        img = Image.open(self.fileNames[index])
-        img_resized = img.resize((self.fileSizes[index]["x"], self.fileSizes[index]["y"]))
-        photo = ImageTk.PhotoImage(img_resized)
+        img = self.getAdaptedImage(index)
+        photo = ImageTk.PhotoImage(img)
+
         self.main.canvas.image = photo
         self.main.canvas.create_image(
             400,  # half of 800
@@ -91,4 +125,3 @@ class ImageHandler:
             image=self.main.canvas.image,
             anchor='center'
         )
-
