@@ -59,17 +59,13 @@ class ImageHandler:
             for i in range(len(self.fileNames)):
                 # Open the image file
                 img = self.getAdaptedImage(i)
-                print(self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], self.fileSizes[i]["x"] - self.fileSizes[i]["x_offset"], self.fileSizes[i]["y"] - self.fileSizes[i]["y_offset"])
-                img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], self.fileSizes[i]["x"] - self.fileSizes[i]["x_offset"], self.fileSizes[i]["y"] - self.fileSizes[i]["y_offset"]))
-                path = '/'.join(filename.split('/')[:-1]) + "/" + self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp"
-                print(path)
                 img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], 800 + self.fileSizes[i]["x_offset"], 480 + self.fileSizes[i]["y_offset"]))
+                path = '/'.join(filename.split('/')[:-1]) + "/" + self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp"
 
                 # Save the image as BMP
                 img.save(path)
-
-                print("Exportiert", self.fileNames[i], "as", filename + str(i) + ".bmp")
-
+                print(path)
+                
         # When the export is done, show a message box
         messagebox.showinfo("Export fertig", "Bilder wurden Erfolgreich Exportiert.", parent=self.main.root)
         self.main.root.destroy()  # This will close the message box and the root window
