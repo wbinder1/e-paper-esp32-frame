@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import Canvas
 from PIL import ImageTk, Image
+from tkinter import messagebox
 
 class ImageHandler:
     main = None
@@ -25,10 +26,6 @@ class ImageHandler:
         
         if(len(self.fileNames) == 0):
             return
-        
-        # Clear the button frame
-        for widget in self.main.left_frame.winfo_children():
-            widget.destroy()
 
         # Put the fileNames into a scrollable listbox
         listbox = tk.Listbox(self.main.left_frame, selectmode=tk.SINGLE)
@@ -39,6 +36,31 @@ class ImageHandler:
         listbox.bind('<<ListboxSelect>>', self.on_selection_change)
         listbox.selection_set(0)
         self.canvasImage(0)
+
+    def exportImages(self):
+        print("Exporting Images")
+
+        # Create a file dialog
+        filename = fd.asksaveasfilename(
+            title="Save images as BMP",
+            initialdir="/",
+            filetypes=(("BMP files", "*.bmp"),)
+        )
+
+        # Check if a file was selected
+        if filename:
+            print (filename)
+            # Loop over the selected images
+            for i in range(len(self.fileNames)):
+                # Open the image file
+                img = Image.open(self.fileNames[i])
+
+                # Save the image as BMP
+                img.save(self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp")
+
+                print("Exported", self.fileNames[i], "as", filename + str(i) + ".bmp")
+
+        messagebox.showinfo("Export Complete", "Images have been exported successfully.")
 
     def on_selection_change(self, event):
         selection = event.widget.curselection()

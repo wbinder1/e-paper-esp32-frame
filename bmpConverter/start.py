@@ -24,9 +24,12 @@ class ImageApp:
         self.left_frame.grid(row=0, column=0)
 
         # Create two buttons inside the frame
-        button1 = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages)
-        button1.place(relx=0.5, rely=0.5, anchor='center')
-        button1.pack()
+        buttonLoading = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages)
+        buttonLoading.place(relx=0.5, rely=0.5, anchor='center')
+        buttonLoading.pack()
+        buttonExport = tk.Button(self.left_frame, text="Bilder Exportieren", command=self.imageHandler.exportImages)
+        buttonExport.place(relx=0.75, rely=0.75, anchor='center')  
+        buttonExport.pack()
 
         self.right_frame = tk.Frame(self.root)
         self.right_frame.grid(row=0, column=1)
