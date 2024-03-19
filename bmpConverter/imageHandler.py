@@ -63,6 +63,8 @@ class ImageHandler:
                 img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], self.fileSizes[i]["x"] - self.fileSizes[i]["x_offset"], self.fileSizes[i]["y"] - self.fileSizes[i]["y_offset"]))
                 path = '/'.join(filename.split('/')[:-1]) + "/" + self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp"
                 print(path)
+                img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], 800 + self.fileSizes[i]["x_offset"], 480 + self.fileSizes[i]["y_offset"]))
+
                 # Save the image as BMP
                 img.save(path)
 
