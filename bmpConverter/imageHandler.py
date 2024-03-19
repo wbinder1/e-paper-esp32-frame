@@ -61,9 +61,10 @@ class ImageHandler:
                 img = self.getAdaptedImage(i)
                 print(self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], self.fileSizes[i]["x"] - self.fileSizes[i]["x_offset"], self.fileSizes[i]["y"] - self.fileSizes[i]["y_offset"])
                 img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], self.fileSizes[i]["x"] - self.fileSizes[i]["x_offset"], self.fileSizes[i]["y"] - self.fileSizes[i]["y_offset"]))
-
+                path = '/'.join(filename.split('/')[:-1]) + "/" + self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp"
+                print(path)
                 # Save the image as BMP
-                img.save(self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp")
+                img.save(path)
 
                 print("Exportiert", self.fileNames[i], "as", filename + str(i) + ".bmp")
 
