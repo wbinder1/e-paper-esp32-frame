@@ -75,19 +75,19 @@ class ImageApp:
         self.arrow_frame.grid(row=5, column=0, columnspan=2, sticky="nsew")
         # Create the arrows inside the frame
         buttonTop = tk.Button(self.arrow_frame, text="↑"
-                             #, command=self.moveUp
+                                , command= lambda :self.imageHandler.changeOffset(0,1)
                              )
         buttonTop.grid(row=0, column=1, sticky="nsew")
         buttonLeft = tk.Button(self.arrow_frame, text="←"
-                              #, command=self.moveLeft
+                                , command= lambda :self.imageHandler.changeOffset(1,0)
                               )
         buttonLeft.grid(row=1, column=0, sticky="nsew")
         buttonRight = tk.Button(self.arrow_frame, text="→"
-                               #, command=self.moveRight
+                                , command= lambda :self.imageHandler.changeOffset(-1,0)
                                )
         buttonRight.grid(row=1, column=2, sticky="nsew")
         buttonBottom = tk.Button(self.arrow_frame, text="↓"
-                                #, command=self.moveDown
+                                , command= lambda :self.imageHandler.changeOffset(0,-1)
                                 )
         buttonBottom.grid(row=2, column=1, sticky="nsew")
 

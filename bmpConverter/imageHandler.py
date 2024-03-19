@@ -76,11 +76,14 @@ class ImageHandler:
             self.canvasImage(self.imageSelected)
 
     def initImage(self, index):
-        self.fileSizes.append({'x': 0, 'y': 0, 'rotate' : 0})
+        self.fileSizes.append({'x': 0, 'y': 0, 'x_offset' : 0, 'y_offset' : 0, 'rotate' : 0})
         self.setImageSize(index)
 
     def setImageSize(self, index):
         img = Image.open(self.fileNames[index])
+        x_offset = 0
+        y_offset = 0
+
         if(self.fileSizes[index]["rotate"]%180 != 0):            
             aspect_ratio = img.width / img.height
             new_height = 800
@@ -88,22 +91,31 @@ class ImageHandler:
             if new_width < 480:
                 new_width = 480
                 new_height = round(new_width / aspect_ratio)
+                x_offset = (new_height - 800) / 2
+            else:
+                y_offset = (new_width - 480) / 2
         else:
             aspect_ratio = img.width / img.height
 
             new_width = 800
             new_height = round(new_width / aspect_ratio)
+        
             if new_height < 480:
                 new_height = 480
                 new_width = round(new_height * aspect_ratio)
+                x_offset = (new_width - 800) / 2
+            else:
+                y_offset = (new_height - 480) / 2
 
         self.fileSizes[index]["x"] = new_width
         self.fileSizes[index]["y"] = new_height
+        self.fileSizes[index]["x_offset"] = x_offset
+        self.fileSizes[index]["y_offset"] = y_offset
 
     def getAdaptedImage(self,index):
         img = Image.open(self.fileNames[index])
-        img = img.rotate(self.fileSizes[index]["rotate"])
         img = img.resize((self.fileSizes[index]["x"], self.fileSizes[index]["y"]))
+        img = img.rotate(self.fileSizes[index]["rotate"], expand = True)
 
         return img
     def rotateImage(self, angle):
@@ -113,15 +125,21 @@ class ImageHandler:
         self.fileSizes[self.imageSelected]["rotate"] += angle
         self.setImageSize(self.imageSelected)
         self.canvasImage(self.imageSelected)
+    def changeOffset(self, x, y):
+        x *= 5
+        y *= 5
+        self.fileSizes[self.imageSelected]["x_offset"] += x
+        self.fileSizes[self.imageSelected]["y_offset"] += y
+        self.canvasImage(self.imageSelected)
 
     def canvasImage(self, index):
         img = self.getAdaptedImage(index)
         photo = ImageTk.PhotoImage(img)
 
+
         self.main.canvas.image = photo
         self.main.canvas.create_image(
-            400,  # half of 800
-            240,
+            0 - self.fileSizes[index]["x_offset"],
+            0 - self.fileSizes[index]["y_offset"],
             image=self.main.canvas.image,
-            anchor='center'
-        )
+            anchor=tk.NW)
