@@ -38,10 +38,10 @@ class ImageApp:
         buttonExport.grid(row=0, column=1, sticky="nsew")
         self.listbox = tk.Listbox(self.left_frame, selectmode=tk.SINGLE, height =18)
         self.listbox.grid(row=1, column=0, columnspan=2, sticky="nsew")
-        buttonDelete = tk.Button(self.left_frame, text="Löschen"
-                                #   ,command=self.deleteImage
-                                 )
-        buttonDelete.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        buttonDelete = tk.Button(self.left_frame, text="Löschen" ,command=self.imageHandler.deleteImage)
+        buttonDelete.grid(row=2, column=0, sticky="nsew")
+        buttonDeleteAll = tk.Button(self.left_frame, text="Alles Löschen" ,command=self.imageHandler.deleteAllImages)
+        buttonDeleteAll.grid(row=2, column=1, sticky="nsew")
         buttonMinus = tk.Button(self.left_frame, text="-"
                                 #, command=self.decreaseSize
                                 )

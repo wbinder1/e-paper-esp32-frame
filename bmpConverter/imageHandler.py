@@ -41,6 +41,9 @@ class ImageHandler:
 
     def exportImages(self):
         print("Exporting Images")
+        if(len(self.fileNames) == 0):
+            messagebox.showinfo("Error", "Es wurden keine Bilder geladen.", parent=self.main.root)
+            return
 
         # Create a file dialog
         filename = fd.asksaveasfilename(
@@ -65,10 +68,35 @@ class ImageHandler:
                 # Save the image as BMP
                 img.save(path)
                 print(path)
-                
+        else:
+            return
+
         # When the export is done, show a message box
         messagebox.showinfo("Export fertig", "Bilder wurden Erfolgreich Exportiert.", parent=self.main.root)
-        self.main.root.destroy()  # This will close the message box and the root window
+        # self.main.root.destroy()  # This will close the message box and the root window
+    def deleteImage(self):
+        if(self.imageSelected == None):
+            return
+        self.main.listbox.delete(self.imageSelected)
+        self.fileNames = list(self.fileNames)
+        self.fileNames.pop(self.imageSelected)
+        self.fileNames = tuple(self.fileNames)
+        if(len(self.fileNames) == 0):
+            self.imageSelected = None
+            self.main.canvas.delete("all")
+            return
+        if(self.imageSelected >= len(self.fileNames)):
+            self.imageSelected = len(self.fileNames) - 1
+        else:
+            self.imageSelected = 0
+        self.main.listbox.selection_set(self.imageSelected)
+        self.canvasImage(self.imageSelected)
+    def deleteAllImages(self):
+        self.main.listbox.delete(0, tk.END)
+        self.fileNames = []
+        self.fileSizes = []
+        self.imageSelected = None
+        self.main.canvas.delete("all")
 
     def on_selection_change(self, event):
         selection = event.widget.curselection()
