@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import Canvas
 from PIL import ImageTk, Image
-from tkinter import messagebox
+from tkinter import Tk, messagebox
 
 class ImageHandler:
     main = None
@@ -51,6 +51,9 @@ class ImageHandler:
         if filename:
             print (filename)
             # Loop over the selected images
+            if len(self.fileNames) == 0:
+                messagebox.showinfo("Error", "Es wurden keine Bilder geladen.", parent=self.main.root)
+                return
             for i in range(len(self.fileNames)):
                 # Open the image file
                 img = Image.open(self.fileNames[i])
@@ -58,9 +61,11 @@ class ImageHandler:
                 # Save the image as BMP
                 img.save(self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp")
 
-                print("Exported", self.fileNames[i], "as", filename + str(i) + ".bmp")
+                print("Exportiert", self.fileNames[i], "as", filename + str(i) + ".bmp")
 
-        messagebox.showinfo("Export Complete", "Images have been exported successfully.")
+        # When the export is done, show a message box
+        messagebox.showinfo("Export fertig", "Bilder wurden Erfolgreich Exportiert.", parent=self.main.root)
+        self.main.root.destroy()  # This will close the message box and the root window
 
     def on_selection_change(self, event):
         selection = event.widget.curselection()
