@@ -20,21 +20,23 @@ class ImageApp:
         # Create a frame to hold the buttons
         self.left_frame = tk.Frame(self.root)
         # Configure the rows
-        for i in range(2):
+        for i in range(6):
             self.left_frame.grid_rowconfigure(i, weight=1)
 
+
         # Configure the columns
-        for i in range(6):
+        for i in range(2):
             self.left_frame.grid_columnconfigure(i, weight=1)
+            
 
         self.left_frame.grid(row=0, column=0)
 
         # Create the left buttons and lists inside the frame
-        buttonLoading = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages)
+        buttonLoading = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages, width= 14)
         buttonLoading.grid(row=0, column=0, sticky="nsew")
-        buttonExport = tk.Button(self.left_frame, text="Bilder Exportieren", command=self.imageHandler.exportImages)
+        buttonExport = tk.Button(self.left_frame, text="Bilder Exportieren", command=self.imageHandler.exportImages, width= 14)
         buttonExport.grid(row=0, column=1, sticky="nsew")
-        self.listbox = tk.Listbox(self.left_frame, selectmode=tk.SINGLE)
+        self.listbox = tk.Listbox(self.left_frame, selectmode=tk.SINGLE, height =18)
         self.listbox.grid(row=1, column=0, columnspan=2, sticky="nsew")
         buttonDelete = tk.Button(self.left_frame, text="Löschen"
                                 #   ,command=self.deleteImage
@@ -57,6 +59,38 @@ class ImageApp:
                                       #, command=self.rotateRight
                                       )
         buttonRotateRight.grid(row=4, column=1, sticky="nsew")
+
+
+        # Create a frame to hold the arrows
+        self.arrow_frame = tk.Frame(self.left_frame)
+        # configure the rows
+        for i in range(3):
+            self.arrow_frame.grid_rowconfigure(i, weight=1)
+
+        # Configure the columns
+        for i in range(3):
+            self.arrow_frame.grid_columnconfigure(i, weight=1)
+        
+        # Place the frame inside the left frame
+        self.arrow_frame.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        # Create the arrows inside the frame
+        buttonTop = tk.Button(self.arrow_frame, text="↑"
+                             #, command=self.moveUp
+                             )
+        buttonTop.grid(row=0, column=1, sticky="nsew")
+        buttonLeft = tk.Button(self.arrow_frame, text="←"
+                              #, command=self.moveLeft
+                              )
+        buttonLeft.grid(row=1, column=0, sticky="nsew")
+        buttonRight = tk.Button(self.arrow_frame, text="→"
+                               #, command=self.moveRight
+                               )
+        buttonRight.grid(row=1, column=2, sticky="nsew")
+        buttonBottom = tk.Button(self.arrow_frame, text="↓"
+                                #, command=self.moveDown
+                                )
+        buttonBottom.grid(row=2, column=1, sticky="nsew")
+
 
 
 
