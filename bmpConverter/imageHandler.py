@@ -49,6 +49,7 @@ class ImageHandler:
         filename = fd.asksaveasfilename(
             title="Save images as BMP",
             initialdir="/",
+            initialfile="this-file-name-doesnt-matter.bmp",  # Preset filename
             filetypes=(("BMP files", "*.bmp"),)
         )
 
@@ -62,11 +63,16 @@ class ImageHandler:
             for i in range(len(self.fileNames)):
                 # Open the image file
                 img = self.getAdaptedImage(i)
-                img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], 800 + self.fileSizes[i]["x_offset"], 480 + self.fileSizes[i]["y_offset"]))
+                # img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], 800 + self.fileSizes[i]["x_offset"], 480 + self.fileSizes[i]["y_offset"]))
+                # Ensure img is in RGB mode
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                background = Image.new('RGB', (800, 480), (255, 255, 255))
+                background.paste(img, (int(-self.fileSizes[i]["x_offset"]), int(-self.fileSizes[i]["y_offset"])))
                 path = '/'.join(filename.split('/')[:-1]) + "/" + self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp"
 
                 # Save the image as BMP
-                img.save(path)
+                background.save(path)
                 print(path)
         else:
             return
