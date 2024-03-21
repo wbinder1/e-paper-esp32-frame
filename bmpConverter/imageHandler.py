@@ -111,7 +111,7 @@ class ImageHandler:
             self.canvasImage(self.imageSelected)
 
     def initImage(self, index):
-        self.fileSizes.append({'x': 0, 'y': 0, 'x_offset' : 0, 'y_offset' : 0, 'rotate' : 0})
+        self.fileSizes.append({'x': 0, 'y': 0, 'x_offset' : 0, 'y_offset' : 0, 'rotate' : 0, 'scale' : 1})
         self.setImageSize(index)
 
     def setImageSize(self, index):
@@ -149,7 +149,7 @@ class ImageHandler:
 
     def getAdaptedImage(self,index):
         img = Image.open(self.fileNames[index])
-        img = img.resize((self.fileSizes[index]["x"], self.fileSizes[index]["y"]))
+        img = img.resize((int(self.fileSizes[index]["x"] * self.fileSizes[index]["scale"]), int(self.fileSizes[index]["y"] * self.fileSizes[index]["scale"])), Image.ANTIALIAS)        
         img = img.rotate(self.fileSizes[index]["rotate"], expand = True)
 
         return img
@@ -165,6 +165,13 @@ class ImageHandler:
         y *= 5
         self.fileSizes[self.imageSelected]["x_offset"] += x
         self.fileSizes[self.imageSelected]["y_offset"] += y
+        self.canvasImage(self.imageSelected)
+
+    def changeScale(self, value):
+        self.fileSizes[self.imageSelected]["scale"] += value
+        self.fileSizes[self.imageSelected]["x_offset"] += self.fileSizes[self.imageSelected]["x"]/2 * value
+        self.fileSizes[self.imageSelected]["y_offset"] += self.fileSizes[self.imageSelected]["y"]/2 * value
+        # self.setImageSize(self.imageSelected)
         self.canvasImage(self.imageSelected)
 
     def canvasImage(self, index):

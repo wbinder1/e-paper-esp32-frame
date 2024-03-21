@@ -42,14 +42,10 @@ class ImageApp:
         buttonDelete.grid(row=2, column=0, sticky="nsew")
         buttonDeleteAll = tk.Button(self.left_frame, text="Alles Löschen" ,command=self.imageHandler.deleteAllImages)
         buttonDeleteAll.grid(row=2, column=1, sticky="nsew")
-        buttonMinus = tk.Button(self.left_frame, text="-"
-                                #, command=self.decreaseSize
-                                )
+        buttonMinus = tk.Button(self.left_frame, text="-", command=lambda :self.imageHandler.changeScale(-.1))
 
         buttonMinus.grid(row=3, column=0, sticky="nsew")
-        buttonPlus = tk.Button(self.left_frame, text="+"
-                               #, command=self.increaseSize
-                               )
+        buttonPlus = tk.Button(self.left_frame, text="+", command=lambda :self.imageHandler.changeScale(.1))
         buttonPlus.grid(row=3, column=1, sticky="nsew")
         buttonRotateLeft = tk.Button(self.left_frame, text="⟲", command=lambda :self.imageHandler.rotateImage(90))
         buttonRotateLeft.grid(row=4, column=0, sticky="nsew")
