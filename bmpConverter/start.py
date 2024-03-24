@@ -7,12 +7,19 @@ from imageHandler import ImageHandler
 class ImageApp:
     def __init__(self):
         self.imageHandler = ImageHandler(self)
+        self.up_pressed = False
+        self.down_pressed = False
+        self.left_pressed = False
+        self.right_pressed = False
+        self.plus_pressed = False
+        self.minus_pressed = False
                
         # Create the main window
         self.root = tk.Tk()
         self.root.title("BMP Converter")
         self.root.geometry("1000x480")
         self.root.minsize(1000, 480)
+        self.root.after(20, self.update)  # Call update every 100 ms
         self.root.grid_rowconfigure(0, minsize=480)
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_columnconfigure(1, minsize=800)
@@ -66,13 +73,13 @@ class ImageApp:
         # Place the frame inside the left frame
         self.arrow_frame.grid(row=5, column=0, columnspan=2, sticky="nsew")
         # Create the arrows inside the frame
-        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0,-1))
+        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0,-5))
         buttonTop.grid(row=0, column=1, sticky="nsew")
-        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(-1,0))
+        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(-5,0))
         buttonLeft.grid(row=1, column=0, sticky="nsew")
-        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(1,0))
+        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(5,0))
         buttonRight.grid(row=1, column=2, sticky="nsew")
-        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0,1))
+        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0,5))
         buttonBottom.grid(row=2, column=1, sticky="nsew")
 
         self.right_frame = tk.Frame(self.root)
@@ -84,11 +91,58 @@ class ImageApp:
             height=480
         )
         self.canvas.pack()
-
-        self.canvas.create_rectangle(0, 0, 800, 480, fill="grey")
+        self.canvas.bind('<KeyPress>', self.key_press)
+        self.canvas.bind('<KeyRelease>', self.key_release)
+        self.canvas.focus_set()
 
     def run(self):
         self.root.mainloop()
+    
+    def key_press(self, event):
+        print(event.keysym)
+        if event.keysym == 'Up':
+            self.up_pressed = True
+        elif event.keysym == 'Down':
+            self.down_pressed = True
+        elif event.keysym == 'Left':
+            self.left_pressed = True
+        elif event.keysym == 'Right':
+            self.right_pressed = True
+        elif event.keysym == 'plus':
+            self.plus_pressed = True
+        elif event.keysym == 'minus':
+            self.minus_pressed = True
+
+    def key_release(self, event):
+        # print(event.keysym)
+        if event.keysym == 'Up':
+            self.up_pressed = False
+        elif event.keysym == 'Down':
+            self.down_pressed = False
+        elif event.keysym == 'Left':
+            self.left_pressed = False
+        elif event.keysym == 'Right':
+            self.right_pressed = False
+        elif event.keysym == 'plus':
+            self.plus_pressed = False
+        elif event.keysym == 'minus':
+            self.minus_pressed = False
+
+    def update(self):
+        # print("update")
+        if self.up_pressed:
+            self.imageHandler.changeOffset(0, -1)
+        if self.down_pressed:
+            self.imageHandler.changeOffset(0, 1)
+        if self.left_pressed:
+            self.imageHandler.changeOffset(-1, 0)
+        if self.right_pressed:
+            self.imageHandler.changeOffset(1, 0)
+        if self.plus_pressed:
+            self.imageHandler.changeScale(.1)
+        if self.minus_pressed:
+            self.imageHandler.changeScale(-.1)
+        self.root.after(100, self.update)  # Call update every 100 ms
 
 if __name__ == "__main__":
     app = ImageApp()

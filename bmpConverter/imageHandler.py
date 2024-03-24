@@ -154,21 +154,25 @@ class ImageHandler:
 
         return img
     def rotateImage(self, angle):
-        print(self.imageSelected)
         if(self.imageSelected == None):
             return
         self.fileSizes[self.imageSelected]["rotate"] += angle
         self.setImageSize(self.imageSelected)
         self.canvasImage(self.imageSelected)
     def changeOffset(self, x, y):
-        x *= 5
-        y *= 5
+        if(self.imageSelected == None):
+            return
         self.fileSizes[self.imageSelected]["x_offset"] += x
         self.fileSizes[self.imageSelected]["y_offset"] += y
         self.canvasImage(self.imageSelected)
 
     def changeScale(self, value):
-        self.fileSizes[self.imageSelected]["scale"] += value
+        if(self.imageSelected == None):
+            return
+        new_scale = self.fileSizes[self.imageSelected]["scale"] + value
+        if new_scale <= 0:
+            return
+        self.fileSizes[self.imageSelected]["scale"] = new_scale
         self.fileSizes[self.imageSelected]["x_offset"] += self.fileSizes[self.imageSelected]["x"]/2 * value
         self.fileSizes[self.imageSelected]["y_offset"] += self.fileSizes[self.imageSelected]["y"]/2 * value
         # self.setImageSize(self.imageSelected)
