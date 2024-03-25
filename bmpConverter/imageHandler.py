@@ -20,21 +20,27 @@ class ImageHandler:
             ('Images', '*.png')
         )
 
-        self.fileNames = fd.askopenfilenames(
+        newFileNames = fd.askopenfilenames(
             title='Open image Files',
             initialdir='/',
             filetypes=filetypes)
-        
-        if(len(self.fileNames) == 0):
+
+        if len(newFileNames) == 0:
             return
 
+        # Initialize self.fileNames if it doesn't exist
+        if len(self.fileNames) == 0:
+            self.fileNames = newFileNames
+        else:
+            # Append new files to the existing list
+            self.fileNames.extend(newFileNames)
+
+        index = len(self.fileNames) - len(newFileNames)
         # Put the fileNames into a scrollable listbox
-        index = 0
-        for filename in self.fileNames:
-            self.initImage(index)
+        for filename in newFileNames:
+            self.initImage(index)  # Use the last index
             self.main.listbox.insert(tk.END, filename.split('/')[-1])
             index += 1
-        self.main.listbox.bind('<<ListboxSelect>>', self.on_selection_change)
         self.imageSelected = 0
         self.main.listbox.selection_set(0)
         self.canvasImage(0)
@@ -63,14 +69,14 @@ class ImageHandler:
             for i in range(len(self.fileNames)):
                 # Open the image file
                 img = self.getAdaptedImage(i)
-                # img = img.crop((self.fileSizes[i]["x_offset"], self.fileSizes[i]["y_offset"], 800 + self.fileSizes[i]["x_offset"], 480 + self.fileSizes[i]["y_offset"]))
-                # Ensure img is in RGB mode
+                if img.mode == 'RGBA':
+                    background = Image.new('RGBA', img.size, (255,255,255))
+                    img = Image.alpha_composite(background, img)
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
                 background = Image.new('RGB', (800, 480), (255, 255, 255))
                 background.paste(img, (int(-self.fileSizes[i]["x_offset"]), int(-self.fileSizes[i]["y_offset"])))
                 path = '/'.join(filename.split('/')[:-1]) + "/" + self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp"
-
                 # Save the image as BMP
                 background.save(path)
                 print(path)
@@ -87,6 +93,7 @@ class ImageHandler:
         self.fileNames = list(self.fileNames)
         self.fileNames.pop(self.imageSelected)
         self.fileNames = tuple(self.fileNames)
+        self.fileSizes.pop(self.imageSelected)
         if(len(self.fileNames) == 0):
             self.imageSelected = None
             self.main.canvas.delete("all")
@@ -104,15 +111,17 @@ class ImageHandler:
         self.imageSelected = None
         self.main.canvas.delete("all")
 
-    def on_selection_change(self, event):
-        selection = event.widget.curselection()
-        if selection:
-            self.imageSelected = selection[0]
-            self.canvasImage(self.imageSelected)
-
     def initImage(self, index):
         self.fileSizes.append({'x': 0, 'y': 0, 'x_offset' : 0, 'y_offset' : 0, 'rotate' : 0, 'scale' : 1})
         self.setImageSize(index)
+
+    def resetImage(self, index):
+        self.fileSizes[index]["x_offset"] = 0
+        self.fileSizes[index]["y_offset"] = 0
+        self.fileSizes[index]["scale"] = 1
+        self.fileSizes[index]["rotate"] = 0
+        self.setImageSize(index)
+        self.canvasImage(index)
 
     def setImageSize(self, index):
         img = Image.open(self.fileNames[index])
@@ -157,6 +166,7 @@ class ImageHandler:
         if(self.imageSelected == None):
             return
         self.fileSizes[self.imageSelected]["rotate"] += angle
+        self.fileSizes[self.imageSelected]["scale"] = 1
         self.setImageSize(self.imageSelected)
         self.canvasImage(self.imageSelected)
     def changeOffset(self, x, y):
