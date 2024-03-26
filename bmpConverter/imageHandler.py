@@ -17,6 +17,7 @@ class ImageHandler:
     def loadImages(self):
         filetypes = (
             ('Images', '*.jpg'),
+            ('Images', '*.jpeg'),
             ('Images', '*.png')
         )
 
@@ -180,8 +181,9 @@ class ImageHandler:
         if(self.imageSelected == None):
             return
         new_scale = self.fileSizes[self.imageSelected]["scale"] + value
-        if new_scale <= 0:
+        if new_scale <= 0.05:
             return
+        print(new_scale)
         self.fileSizes[self.imageSelected]["scale"] = new_scale
         self.fileSizes[self.imageSelected]["x_offset"] += self.fileSizes[self.imageSelected]["x"]/2 * value
         self.fileSizes[self.imageSelected]["y_offset"] += self.fileSizes[self.imageSelected]["y"]/2 * value

@@ -43,7 +43,7 @@ uint16_t width() { return EPD_WIDTH; }
 uint16_t height() { return EPD_HEIGHT; }
 SPIClass vspi(VSPI);
 
-uint8_t colorPallete[8*3] = {
+uint8_t colorPallete[7*3] = {
 	0, 0, 0,
 	255, 255, 255,
 	67, 138, 28,
@@ -51,8 +51,17 @@ uint8_t colorPallete[8*3] = {
 	191, 0, 0,
 	255, 243, 56,
 	232, 126, 0,
-	194 ,164 , 244 
 };
+
+uint8_t newColorPallete[7*3] = {
+	0, 0, 0,
+	255, 255, 255,
+	0, 255, 0,
+	0, 0, 255,
+	255, 0, 0,
+	255, 255, 0,
+	255, 128, 0
+  };
 
 //uint8_t output_buffer[EPD_WIDTH * EPD_HEIGHT / 4];
 
@@ -144,7 +153,7 @@ void setup() {
     // //epd.EPD_7IN3F_Display_part(output_buffer, 0, 120, 800, 240);
     // delay(5000);
     // //Serial.print("draw 7 color block\r\n ");
-    // //epd.EPD_7IN3F_Show7Block();
+    // epd.EPD_7IN3F_Show7Block();
     // delay(2000);
     // Serial.print("Done\r\n ");
     
@@ -358,13 +367,22 @@ bool drawBmp(const char *filename) {
           b = c; g = c >> 8; r = c >> 16;
         }
         uint8_t color;
-        int indexColor = depalette(r, g, b);
-        // bptr[-1] = colorPallete[indexColor*3+0];
-        // bptr[-2] = colorPallete[indexColor*3+1];
-        // bptr[-3] = colorPallete[indexColor*3+2];
-        int errorR = r - colorPallete[indexColor*3+0];
-        int errorG = g - colorPallete[indexColor*3+1];
-        int errorB = b - colorPallete[indexColor*3+2];
+        int indexColor;
+        int errorR;
+        int errorG;
+        int errorB;
+
+        if(col > w/2){
+          indexColor = depaletteNew(r, g, b);
+          errorR = r - newColorPallete[indexColor*3+0];
+          errorG = g - newColorPallete[indexColor*3+1];
+          errorB = b - newColorPallete[indexColor*3+2];
+        }else{
+          indexColor = depalette(r, g, b);
+          errorR = r - colorPallete[indexColor*3+0];
+          errorG = g - colorPallete[indexColor*3+1];
+          errorB = b - colorPallete[indexColor*3+2];
+        }
 
       
         
@@ -470,4 +488,21 @@ int depalette( uint8_t r, uint8_t g, uint8_t b ){
 	}
 	return bestc;
 }
-
+int depaletteNew( uint8_t r, uint8_t g, uint8_t b ){
+	int p;
+	int mindiff = 100000000;
+	int bestc = 0;
+	for( p = 0; p < sizeof(newColorPallete)/3; p++ )
+	{
+		int diffr = ((int)r) - ((int)newColorPallete[p*3+0]);
+		int diffg = ((int)g) - ((int)newColorPallete[p*3+1]);
+		int diffb = ((int)b) - ((int)newColorPallete[p*3+2]);
+		int diff = (diffr*diffr) + (diffg*diffg) + (diffb * diffb);
+		if( diff < mindiff )
+		{
+			mindiff = diff;
+			bestc = p;
+		}
+	}
+	return bestc;
+}
