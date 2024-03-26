@@ -14,6 +14,8 @@ class ImageApp:
         self.plus_pressed = False
         self.minus_pressed = False
         self.delete_pressed = False
+        self.dot_pressed = False
+        self.command_pressed = False
         self.outerFrameX = 900
         self.outerFrameY = 580
                

@@ -159,7 +159,7 @@ class ImageHandler:
 
     def getAdaptedImage(self,index):
         img = Image.open(self.fileNames[index])
-        img = img.resize((int(self.fileSizes[index]["x"] * self.fileSizes[index]["scale"]), int(self.fileSizes[index]["y"] * self.fileSizes[index]["scale"])), Image.ANTIALIAS)        
+        img = img.resize((int(self.fileSizes[index]["x"] * self.fileSizes[index]["scale"]), int(self.fileSizes[index]["y"] * self.fileSizes[index]["scale"])))        
         img = img.rotate(self.fileSizes[index]["rotate"], expand = True)
 
         return img
