@@ -206,4 +206,4 @@ class ImageHandler:
         y2 = self.main.offsetFrameY + 480
 
         # Draw a red rectangle on the canvas
-        self.main.canvas.create_rectangle(self.main.offsetFrameX, self.main.offsetFrameY, x2, y2, outline='red')
+        self.main.canvas.create_rectangle(self.main.offsetFrameX, self.main.offsetFrameY, x2, y2, outline='red', width=2, dash=(3,5) ) 
