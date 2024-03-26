@@ -197,7 +197,13 @@ class ImageHandler:
 
         self.main.canvas.image = photo
         self.main.canvas.create_image(
-            0 - self.fileSizes[index]["x_offset"],
-            0 - self.fileSizes[index]["y_offset"],
+            0 - self.fileSizes[index]["x_offset"] + self.main.offsetFrameX,
+            0 - self.fileSizes[index]["y_offset"] + self.main.offsetFrameY,
             image=self.main.canvas.image,
             anchor=tk.NW)
+        
+        x2 = self.main.offsetFrameX + 800
+        y2 = self.main.offsetFrameY + 480
+
+        # Draw a red rectangle on the canvas
+        self.main.canvas.create_rectangle(self.main.offsetFrameX, self.main.offsetFrameY, x2, y2, outline='red')
