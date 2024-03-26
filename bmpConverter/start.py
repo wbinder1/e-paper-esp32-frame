@@ -15,7 +15,7 @@ class ImageApp:
         self.minus_pressed = False
         self.delete_pressed = False
         self.dot_pressed = False
-        self.command_pressed = False
+        self.comma_pressed = False
         self.outerFrameX = 900
         self.outerFrameY = 580
                
@@ -145,6 +145,11 @@ class ImageApp:
             self.minus_pressed = True
         elif event.keysym == 'Delete':
             self.delete_pressed = True
+        elif event.keysym == 'period':
+            self.dot_pressed = True
+        elif event.keysym == 'comma':
+            self.comma_pressed = True
+
 
     def key_release(self, event):
         # print(event.keysym)
@@ -162,6 +167,11 @@ class ImageApp:
             self.minus_pressed = False
         elif event.keysym == 'Delete':
             self.delete_pressed = False
+        elif event.keysym == 'period':
+            self.dot_pressed = False
+        elif event.keysym == 'comma':
+            self.comma_pressed = False
+        
 
     def update(self):
         # print("update")
@@ -179,6 +189,10 @@ class ImageApp:
             self.imageHandler.changeScale(-.1)
         if self.delete_pressed:
             self.imageHandler.deleteImage()
+        if self.dot_pressed:
+            self.imageHandler.rotateImage(-90)
+        if self.comma_pressed:
+            self.imageHandler.rotateImage(90)
         self.root.after(100, self.update)  # Call update every 100 ms
 
 if __name__ == "__main__":
