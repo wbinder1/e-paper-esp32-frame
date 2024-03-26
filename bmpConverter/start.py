@@ -85,14 +85,20 @@ class ImageApp:
         
         # Place the frame inside the left frame
         self.arrow_frame.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        # Create a slider with a range of 1-10
+        self.slider = tk.Scale(self.arrow_frame, from_=1, to=10, orient=tk.HORIZONTAL)
+        self.slider.grid(row=3, column=0, columnspan=3, sticky="nsew")
+        self.label = tk.Label(self.arrow_frame, text="Pixel Movement Distance")
+        self.label.grid(row=4, column=0, columnspan=3, sticky="nsew")
+
         # Create the arrows inside the frame
-        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0,-5))
+        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0, -self.slider.get()))
         buttonTop.grid(row=0, column=1, sticky="nsew")
-        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(-5,0))
+        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(-self.slider.get(), 0))
         buttonLeft.grid(row=1, column=0, sticky="nsew")
-        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(5,0))
+        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(self.slider.get(), 0))
         buttonRight.grid(row=1, column=2, sticky="nsew")
-        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0,5))
+        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0, self.slider.get()))
         buttonBottom.grid(row=2, column=1, sticky="nsew")
         buttonReset = tk.Button(self.arrow_frame, text="Reset", command= lambda :self.imageHandler.resetImage(self.imageHandler.imageSelected))
         buttonReset.grid(row=1, column=1, sticky="nsew")
@@ -174,15 +180,17 @@ class ImageApp:
         
 
     def update(self):
-        # print("update")
+        # Get the current value of the slider
+        offset_value = self.slider.get()
+
         if self.up_pressed:
-            self.imageHandler.changeOffset(0, -1)
+            self.imageHandler.changeOffset(0, -offset_value)
         if self.down_pressed:
-            self.imageHandler.changeOffset(0, 1)
+            self.imageHandler.changeOffset(0, offset_value)
         if self.left_pressed:
-            self.imageHandler.changeOffset(-1, 0)
+            self.imageHandler.changeOffset(-offset_value, 0)
         if self.right_pressed:
-            self.imageHandler.changeOffset(1, 0)
+            self.imageHandler.changeOffset(offset_value, 0)
         if self.plus_pressed:
             self.imageHandler.changeScale(.1)
         if self.minus_pressed:
