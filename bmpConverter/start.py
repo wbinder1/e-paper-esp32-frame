@@ -19,7 +19,7 @@ class ImageApp:
         self.root = tk.Tk()
         self.root.title("BMP Converter")
         self.root.geometry("1000x480")
-        self.root.minsize(1000, 480)
+        self.root.minsize(1200, 580)
         self.root.after(20, self.update)  # Call update every 100 ms
         self.root.grid_rowconfigure(0, minsize=480)
         self.root.grid_columnconfigure(0, weight=1)
@@ -98,10 +98,20 @@ class ImageApp:
 
         self.canvas = Canvas(
             self.right_frame,
-            width=800,
-            height=480
+            width=900,  # Change the width to 1200
+            height=540   # Change the height to 840
         )
         self.canvas.pack()
+
+        # Calculate the coordinates for the rectangle
+        x1 = (900 - 800) / 2
+        y1 = (540 - 480) / 2
+        x2 = x1 + 800
+        y2 = y1 + 480
+
+        # Draw a red rectangle on the canvas
+        self.canvas.create_rectangle(x1, y1, x2, y2, outline='red')
+
         self.canvas.bind('<KeyPress>', self.key_press)
         self.canvas.bind('<KeyRelease>', self.key_release)
         self.canvas.bind("<Button-1>", self.canvas_click)
