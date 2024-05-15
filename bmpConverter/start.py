@@ -51,41 +51,41 @@ class ImageApp:
         self.left_frame.grid(row=0, column=0)
 
         # Create the left buttons and lists inside the frame
-        buttonLoading = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages, width= 14, bg='#ECECEC')
+        buttonLoading = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages, width= 14, bg='#8fc9e8')
         buttonLoading.grid(row=0, column=0, sticky="nsew")
-        buttonExport = tk.Button(self.left_frame, text="Bilder Exportieren", command=self.imageHandler.exportImages, width= 14, bg='#ECECEC')
+        buttonExport = tk.Button(self.left_frame, text="Bilder Exportieren", command=self.imageHandler.exportImages, width= 14, bg='#8fc9e8')
         buttonExport.grid(row=0, column=1, sticky="nsew")
         self.listbox = tk.Listbox(self.left_frame, selectmode=tk.SINGLE, height =18)
         self.listbox.grid(row=1, column=0, columnspan=2, sticky="nsew")
         # self.listbox.bind('<Return>', self.on_selection_change)
         self.listbox.bind('<<ListboxSelect>>', self.on_selection_change)
 
-        buttonDelete = tk.Button(self.left_frame, text="Löschen" ,command=self.imageHandler.deleteImage)
+        buttonDelete = tk.Button(self.left_frame, text="Löschen" ,command=self.imageHandler.deleteImage, bg='#8fc9e8')
         buttonDelete.grid(row=2, column=0, sticky="nsew")
-        buttonDeleteAll = tk.Button(self.left_frame, text="Alles Löschen" ,command=self.imageHandler.deleteAllImages)
+        buttonDeleteAll = tk.Button(self.left_frame, text="Alles Löschen" ,command=self.imageHandler.deleteAllImages, bg='#8fc9e8')
         buttonDeleteAll.grid(row=2, column=1, sticky="nsew")
-        buttonMinus = tk.Button(self.left_frame, text="-", command=lambda :self.imageHandler.changeScale(-.1))
+        buttonMinus = tk.Button(self.left_frame, text="-", command=lambda :self.imageHandler.changeScale(-.1), bg='#8fc9e8')
 
         buttonMinus.grid(row=3, column=0, sticky="nsew")
-        buttonPlus = tk.Button(self.left_frame, text="+", command=lambda :self.imageHandler.changeScale(.1))
+        buttonPlus = tk.Button(self.left_frame, text="+", command=lambda :self.imageHandler.changeScale(.1), bg='#8fc9e8')
         buttonPlus.grid(row=3, column=1, sticky="nsew")
-        buttonRotateLeft = tk.Button(self.left_frame, text="⟲", command=lambda :self.imageHandler.rotateImage(90))
+        buttonRotateLeft = tk.Button(self.left_frame, text="⟲", command=lambda :self.imageHandler.rotateImage(90), bg='#8fc9e8')
         buttonRotateLeft.grid(row=4, column=0, sticky="nsew")
-        buttonRotateRight = tk.Button(self.left_frame, text="⟳", command=lambda :self.imageHandler.rotateImage(-90))
+        buttonRotateRight = tk.Button(self.left_frame, text="⟳", command=lambda :self.imageHandler.rotateImage(-90), bg='#8fc9e8')
         buttonRotateRight.grid(row=4, column=1, sticky="nsew")
         # Create a DateEntry widget for the date input
-        self.date_entry = DateEntry(self.left_frame, date_pattern='dd.mm.yyyy')
+        self.date_entry = DateEntry(self.left_frame, date_pattern='dd.mm.yyyy', bg='#8fc9e8')
         self.date_entry.delete(0, 'end')
         self.date_entry.grid(row=7, column=0, sticky="nsew")  # Place it at the bottom
         # Create a Button widget for changing the date
-        self.change_date_button = tk.Button(self.left_frame, text="Reset", command=self.change_date)
+        self.change_date_button = tk.Button(self.left_frame, text="Reset", command=self.change_date, bg='#8fc9e8')
         self.change_date_button.grid(row=7, column=1, sticky="nsew")  # Place it at the bottom
         # Create a DateEntry widget for the Offset input
-        self.date_entry = DateEntry(self.left_frame, date_pattern='dd.mm.yyyy')
-        self.date_entry.grid(row=8, column=0, sticky="nsew")  # Place it at the bottom
+        self.offset_date_entry = DateEntry(self.left_frame, date_pattern='dd.mm.yyyy', bg='#8fc9e8')
+        self.offset_date_entry.grid(row=8, column=0, sticky="nsew")  # Place it at the bottom
         # Create a Button widget for changing the Offset
-        self.change_date_button = tk.Button(self.left_frame, text="Bilder Fangen an am", command=self.change_date)
-        self.change_date_button.grid(row=8, column=1, sticky="nsew")  # Place it at the bottom
+        self.offset_change_date_button = tk.Button(self.left_frame, text="Bilder Fangen an am", command=self.change_date, bg='#8fc9e8')
+        self.offset_change_date_button.grid(row=8, column=1, sticky="nsew")  # Place it at the bottom
         
 
 
@@ -103,21 +103,21 @@ class ImageApp:
         # Place the frame inside the left frame
         self.arrow_frame.grid(row=5, column=0, columnspan=2, sticky="nsew")
         # Create a slider with a range of 1-10
-        self.slider = tk.Scale(self.arrow_frame, from_=1, to=10, orient=tk.HORIZONTAL, bg='#FFFDEE')
+        self.slider = tk.Scale(self.arrow_frame, from_=1, to=10, orient=tk.HORIZONTAL, bg='#8fc9e8')
         self.slider.grid(row=3, column=0, columnspan=3, sticky="nsew")
-        self.label = tk.Label(self.arrow_frame, text="Pixel Bewegungsdistanz", bg='#FFFDEE')
+        self.label = tk.Label(self.arrow_frame, text="Pixel Bewegungsdistanz", bg='#8fc9e8')
         self.label.grid(row=4, column=0, columnspan=3, sticky="nsew")
 
         # Create the arrows inside the frame
-        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0, -self.slider.get()), bg='#ECECEC')
+        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0, -self.slider.get()), bg='#8fc9e8')
         buttonTop.grid(row=0, column=1, sticky="nsew")
-        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(-self.slider.get(), 0), bg='#ECECEC')
+        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(-self.slider.get(), 0), bg='#8fc9e8')
         buttonLeft.grid(row=1, column=0, sticky="nsew")
-        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(self.slider.get(), 0), bg='#ECECEC')
+        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(self.slider.get(), 0), bg='#8fc9e8')
         buttonRight.grid(row=1, column=2, sticky="nsew")
-        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0, self.slider.get()), bg='#ECECEC')
+        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0, self.slider.get()), bg='#8fc9e8')
         buttonBottom.grid(row=2, column=1, sticky="nsew")
-        buttonReset = tk.Button(self.arrow_frame, text="Reset", command= lambda :self.imageHandler.resetImage(self.imageHandler.imageSelected), bg='#ECECEC')
+        buttonReset = tk.Button(self.arrow_frame, text="Reset", command= lambda :self.imageHandler.resetImage(self.imageHandler.imageSelected), bg='#8fc9e8')
         buttonReset.grid(row=1, column=1, sticky="nsew")
 
 
