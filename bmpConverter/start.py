@@ -3,6 +3,7 @@ from tkinter import filedialog as fd
 from tkinter import Canvas
 from PIL import ImageTk, Image
 from imageHandler import ImageHandler
+from tkcalendar import DateEntry
 
 class ImageApp:
     def __init__(self):
@@ -23,7 +24,7 @@ class ImageApp:
         self.root = tk.Tk()
         self.root.configure(bg='#FFFDEE')  # Set the background color
         self.root.title("BMP Converter")
-        self.root.geometry("1000x480")
+        self.root.geometry("1000x650")
         self.root.minsize(300 + self.outerFrameX, self.outerFrameY)
         self.root.after(20, self.update)  # Call update every 100 ms
         self.root.grid_rowconfigure(0, minsize=480)
@@ -38,7 +39,7 @@ class ImageApp:
         # Create a frame to hold the buttons
         self.left_frame = tk.Frame(self.root, bg='#FFFDEE')  # Set the background color
         # Configure the rows
-        for i in range(6):
+        for i in range(8):
             self.left_frame.grid_rowconfigure(i, weight=1)
 
 
@@ -72,10 +73,18 @@ class ImageApp:
         buttonRotateLeft.grid(row=4, column=0, sticky="nsew")
         buttonRotateRight = tk.Button(self.left_frame, text="⟳", command=lambda :self.imageHandler.rotateImage(-90))
         buttonRotateRight.grid(row=4, column=1, sticky="nsew")
+        # Create a DateEntry widget for the date input
+        self.date_entry = DateEntry(self.left_frame)
+        self.date_entry.grid(row=7, column=0)  # Place it at the bottom
+        # Create a Button widget for changing the date
+        self.change_date_button = tk.Button(self.left_frame, text="Reset", command=self.change_date)
+        self.change_date_button.grid(row=7, column=1)  # Place it at the bottom
+        
+
 
 
         # Create a frame to hold the arrows
-        self.arrow_frame = tk.Frame(self.left_frame)
+        self.arrow_frame = tk.Frame(self.left_frame, bg='#FFFDEE')
         # configure the rows
         for i in range(3):
             self.arrow_frame.grid_rowconfigure(i, weight=1)
@@ -87,9 +96,9 @@ class ImageApp:
         # Place the frame inside the left frame
         self.arrow_frame.grid(row=5, column=0, columnspan=2, sticky="nsew")
         # Create a slider with a range of 1-10
-        self.slider = tk.Scale(self.arrow_frame, from_=1, to=10, orient=tk.HORIZONTAL)
+        self.slider = tk.Scale(self.arrow_frame, from_=1, to=10, orient=tk.HORIZONTAL, bg='#FFFDEE')
         self.slider.grid(row=3, column=0, columnspan=3, sticky="nsew")
-        self.label = tk.Label(self.arrow_frame, text="Pixel Movement Distance")
+        self.label = tk.Label(self.arrow_frame, text="Pixel Bewegungsdistanz", bg='#FFFDEE')
         self.label.grid(row=4, column=0, columnspan=3, sticky="nsew")
 
         # Create the arrows inside the frame
@@ -103,6 +112,7 @@ class ImageApp:
         buttonBottom.grid(row=2, column=1, sticky="nsew")
         buttonReset = tk.Button(self.arrow_frame, text="Reset", command= lambda :self.imageHandler.resetImage(self.imageHandler.imageSelected), bg='#ECECEC')
         buttonReset.grid(row=1, column=1, sticky="nsew")
+
 
         # Create a frame to hold the canvas
         self.right_frame = tk.Frame(self.root, bg='#FFFDEE')  # Set the background color
@@ -130,6 +140,10 @@ class ImageApp:
         if selection:
             self.imageHandler.imageSelected = selection[0]
             self.imageHandler.canvasImage(self.imageHandler.imageSelected)
+
+    def change_date(self):
+        # Get the date from the Entry widget
+        date = self.date_entry.get()
 
     def canvas_click(self, event):
         self.canvas.focus_set()
