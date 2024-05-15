@@ -21,6 +21,7 @@ class ImageApp:
                
         # Create the main window
         self.root = tk.Tk()
+        self.root.configure(bg='#FFFDEE')  # Set the background color
         self.root.title("BMP Converter")
         self.root.geometry("1000x480")
         self.root.minsize(300 + self.outerFrameX, self.outerFrameY)
@@ -35,7 +36,7 @@ class ImageApp:
         # self.root.unbind_class("Listbox", "<Key-space>")
 
         # Create a frame to hold the buttons
-        self.left_frame = tk.Frame(self.root)
+        self.left_frame = tk.Frame(self.root, bg='#FFFDEE')  # Set the background color
         # Configure the rows
         for i in range(6):
             self.left_frame.grid_rowconfigure(i, weight=1)
@@ -49,9 +50,9 @@ class ImageApp:
         self.left_frame.grid(row=0, column=0)
 
         # Create the left buttons and lists inside the frame
-        buttonLoading = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages, width= 14)
+        buttonLoading = tk.Button(self.left_frame, text="Bilder Laden", command=self.imageHandler.loadImages, width= 14, bg='#ECECEC')
         buttonLoading.grid(row=0, column=0, sticky="nsew")
-        buttonExport = tk.Button(self.left_frame, text="Bilder Exportieren", command=self.imageHandler.exportImages, width= 14)
+        buttonExport = tk.Button(self.left_frame, text="Bilder Exportieren", command=self.imageHandler.exportImages, width= 14, bg='#ECECEC')
         buttonExport.grid(row=0, column=1, sticky="nsew")
         self.listbox = tk.Listbox(self.left_frame, selectmode=tk.SINGLE, height =18)
         self.listbox.grid(row=1, column=0, columnspan=2, sticky="nsew")
@@ -85,19 +86,26 @@ class ImageApp:
         
         # Place the frame inside the left frame
         self.arrow_frame.grid(row=5, column=0, columnspan=2, sticky="nsew")
+        # Create a slider with a range of 1-10
+        self.slider = tk.Scale(self.arrow_frame, from_=1, to=10, orient=tk.HORIZONTAL)
+        self.slider.grid(row=3, column=0, columnspan=3, sticky="nsew")
+        self.label = tk.Label(self.arrow_frame, text="Pixel Movement Distance")
+        self.label.grid(row=4, column=0, columnspan=3, sticky="nsew")
+
         # Create the arrows inside the frame
-        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0,-5))
+        buttonTop = tk.Button(self.arrow_frame, text="↑", command= lambda :self.imageHandler.changeOffset(0, -self.slider.get()), bg='#ECECEC')
         buttonTop.grid(row=0, column=1, sticky="nsew")
-        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(-5,0))
+        buttonLeft = tk.Button(self.arrow_frame, text="←", command= lambda :self.imageHandler.changeOffset(-self.slider.get(), 0), bg='#ECECEC')
         buttonLeft.grid(row=1, column=0, sticky="nsew")
-        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(5,0))
+        buttonRight = tk.Button(self.arrow_frame, text="→", command= lambda :self.imageHandler.changeOffset(self.slider.get(), 0), bg='#ECECEC')
         buttonRight.grid(row=1, column=2, sticky="nsew")
-        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0,5))
+        buttonBottom = tk.Button(self.arrow_frame, text="↓", command= lambda :self.imageHandler.changeOffset(0, self.slider.get()), bg='#ECECEC')
         buttonBottom.grid(row=2, column=1, sticky="nsew")
-        buttonReset = tk.Button(self.arrow_frame, text="Reset", command= lambda :self.imageHandler.resetImage(self.imageHandler.imageSelected))
+        buttonReset = tk.Button(self.arrow_frame, text="Reset", command= lambda :self.imageHandler.resetImage(self.imageHandler.imageSelected), bg='#ECECEC')
         buttonReset.grid(row=1, column=1, sticky="nsew")
 
-        self.right_frame = tk.Frame(self.root)
+        # Create a frame to hold the canvas
+        self.right_frame = tk.Frame(self.root, bg='#FFFDEE')  # Set the background color
         self.right_frame.grid(row=0, column=1)
 
         self.canvas = Canvas(
@@ -174,15 +182,17 @@ class ImageApp:
         
 
     def update(self):
-        # print("update")
+        # Get the current value of the slider
+        offset_value = self.slider.get()
+
         if self.up_pressed:
-            self.imageHandler.changeOffset(0, -1)
+            self.imageHandler.changeOffset(0, -offset_value)
         if self.down_pressed:
-            self.imageHandler.changeOffset(0, 1)
+            self.imageHandler.changeOffset(0, offset_value)
         if self.left_pressed:
-            self.imageHandler.changeOffset(-1, 0)
+            self.imageHandler.changeOffset(-offset_value, 0)
         if self.right_pressed:
-            self.imageHandler.changeOffset(1, 0)
+            self.imageHandler.changeOffset(offset_value, 0)
         if self.plus_pressed:
             self.imageHandler.changeScale(.1)
         if self.minus_pressed:
