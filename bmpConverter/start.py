@@ -74,7 +74,8 @@ class ImageApp:
         buttonRotateRight = tk.Button(self.left_frame, text="⟳", command=lambda :self.imageHandler.rotateImage(-90))
         buttonRotateRight.grid(row=4, column=1, sticky="nsew")
         # Create a DateEntry widget for the date input
-        self.date_entry = DateEntry(self.left_frame)
+        self.date_entry = DateEntry(self.left_frame, date_pattern='dd.mm.yyyy')
+        self.date_entry.delete(0, 'end')
         self.date_entry.grid(row=7, column=0)  # Place it at the bottom
         # Create a Button widget for changing the date
         self.change_date_button = tk.Button(self.left_frame, text="Reset", command=self.change_date)
