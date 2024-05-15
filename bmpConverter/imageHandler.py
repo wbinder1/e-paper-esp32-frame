@@ -30,11 +30,11 @@ class ImageHandler:
             return
 
         # Initialize self.fileNames if it doesn't exist
-        if len(self.fileNames) == 0:
-            self.fileNames = newFileNames
-        else:
-            # Append new files to the existing list
-            self.fileNames.extend(newFileNames)
+        if not hasattr(self, 'fileNames') or not isinstance(self.fileNames, list):
+            self.fileNames = list(self.fileNames) if hasattr(self, 'fileNames') else []
+
+        # Append new files to the existing list
+        self.fileNames.extend(newFileNames)
 
         index = len(self.fileNames) - len(newFileNames)
         # Put the fileNames into a scrollable listbox
