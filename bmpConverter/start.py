@@ -122,13 +122,14 @@ class ImageApp:
 
 
         # Create a frame to hold the canvas
-        self.right_frame = tk.Frame(self.root, bg='#FFFDEE')  # Set the background color
+        self.right_frame = tk.Frame(self.root, bg='#8fc9e8')  # Set the background color
         self.right_frame.grid(row=0, column=1)
 
         self.canvas = Canvas(
             self.right_frame,
             width=self.outerFrameX,  # Change the width to 1200
-            height=self.outerFrameY   # Change the height to 840
+            height=self.outerFrameY,   # Change the height to 840
+            bg='#8fc9e8'
         )
         self.canvas.pack()
 
