@@ -77,8 +77,10 @@ class ImageApp:
         self.date_entry = DateEntry(self.left_frame, date_pattern='dd.mm.yyyy', bg='#8fc9e8')
         self.date_entry.delete(0, 'end')
         self.date_entry.grid(row=7, column=0, sticky="nsew")  # Place it at the bottom
+        self.date_entry.bind("<<DateEntrySelected>>", self.imageHandler.setImageDate)
+
         # Create a Button widget for changing the date
-        self.change_date_button = tk.Button(self.left_frame, text="Reset", command=self.change_date, bg='#8fc9e8')
+        self.change_date_button = tk.Button(self.left_frame, text="Reset", command=lambda :self.imageHandler.deleteImageDate(), bg='#8fc9e8')
         self.change_date_button.grid(row=7, column=1, sticky="nsew")  # Place it at the bottom
         # Create a DateEntry widget for the Offset input
         self.offset_date_entry = DateEntry(self.left_frame, date_pattern='dd.mm.yyyy', bg='#8fc9e8')
@@ -86,7 +88,7 @@ class ImageApp:
         # Create a Button widget for changing the Offset
         self.offset_change_date_button = tk.Button(self.left_frame, text="Bilder Fangen an am", command=self.change_date, bg='#8fc9e8')
         self.offset_change_date_button.grid(row=8, column=1, sticky="nsew")  # Place it at the bottom
-        
+        # Create a Button widget for changing the date
 
 
 

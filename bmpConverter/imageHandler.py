@@ -12,6 +12,7 @@ class ImageHandler:
         self.main = main
         self.fileNames = []
         self.fileSizes = []
+        self.adaptedFileNames = []
 
 
     def loadImages(self):
@@ -45,6 +46,27 @@ class ImageHandler:
         self.imageSelected = 0
         self.main.listbox.selection_set(0)
         self.canvasImage(0)
+
+    def setImageDate(self, event):
+        print("Setting Image Date")
+        if(self.imageSelected == None):
+            print("No Image Selected")
+            self.main.date_entry.delete(0, 'end')
+            return
+        self.fileSizes[self.imageSelected]["date"] = self.main.date_entry.get()
+        # self.main.change_date_button.focus_set()
+        self.canvasImage(self.imageSelected)
+
+        
+    def deleteImageDate(self):
+        print("Setting Image Date")
+        if(self.imageSelected == None):
+            print("No Image Selectdfgfdged")
+            self.main.date_entry.delete(0, 'end')
+            return
+        self.fileSizes[self.imageSelected]["date"] = None
+        self.canvasImage(self.imageSelected)
+
 
     def exportImages(self):
         print("Exporting Images")
@@ -113,7 +135,7 @@ class ImageHandler:
         self.main.canvas.delete("all")
 
     def initImage(self, index):
-        self.fileSizes.append({'x': 0, 'y': 0, 'x_offset' : 0, 'y_offset' : 0, 'rotate' : 0, 'scale' : 1})
+        self.fileSizes.append({'x': 0, 'y': 0, 'x_offset' : 0, 'y_offset' : 0, 'rotate' : 0, 'scale' : 1, 'date' : None})
         self.setImageSize(index)
 
     def resetImage(self, index):
@@ -183,7 +205,6 @@ class ImageHandler:
         new_scale = self.fileSizes[self.imageSelected]["scale"] + value
         if new_scale <= 0.05:
             return
-        print(new_scale)
         self.fileSizes[self.imageSelected]["scale"] = new_scale
         self.fileSizes[self.imageSelected]["x_offset"] += self.fileSizes[self.imageSelected]["x"]/2 * value
         self.fileSizes[self.imageSelected]["y_offset"] += self.fileSizes[self.imageSelected]["y"]/2 * value
@@ -204,6 +225,12 @@ class ImageHandler:
         
         x2 = self.main.offsetFrameX + 800
         y2 = self.main.offsetFrameY + 480
+
+        if(self.fileSizes[index]["date"] != None):
+            self.main.date_entry.set_date(self.fileSizes[index]["date"])
+        else:
+            print("Deleting Date")
+            self.main.date_entry.delete(0, 'end')
 
         # Draw a red rectangle on the canvas
         self.main.canvas.create_rectangle(self.main.offsetFrameX, self.main.offsetFrameY, x2, y2, outline='red', width=4, dash=(3,5) ) 
