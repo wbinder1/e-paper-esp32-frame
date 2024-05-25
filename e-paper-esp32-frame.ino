@@ -37,7 +37,7 @@ Preferences preferences;
 // #include "LittleFS.h"
 
 Epd epd;
-#define SD_CS_PIN 5 // Change this to match your SD card CS pin!
+#define SD_CS_PIN 22 // Change this to match your SD card CS pin!
 
 uint16_t width() { return EPD_WIDTH; }
 uint16_t height() { return EPD_HEIGHT; }
