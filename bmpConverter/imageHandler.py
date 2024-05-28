@@ -1,8 +1,10 @@
 import tkinter as tk
+import random
 from tkinter import filedialog as fd
 from tkinter import Canvas
 from PIL import ImageTk, Image
 from tkinter import Tk, messagebox
+from datetime import datetime, timedelta
 
 class ImageHandler:
     main = None
@@ -84,20 +86,48 @@ class ImageHandler:
         if filename:
             print (filename)
             # Loop over the selected images
-            if len(self.fileNames) == 0:
-                messagebox.showinfo("Error", "Es wurden keine Bilder geladen.", parent=self.main.root)
-                return
+
+            dateSelectedFiles = [data.copy() for data in self.fileData if data["date"] is not None]
+            dateNotSelectedFiles = [data.copy() for data in self.fileData if data["date"] is None]	
+            #Shuffle dateNotSelectedFiles randomly
+            random.shuffle(dateNotSelectedFiles)
+            
+            offsetDate = self.main.offset_date_entry.get()
+            offsetDate = datetime.strptime(offsetDate, '%d.%m.%Y')
+
+            newFileData = []
+
             for i in range(len(self.fileNames)):
+                dateFound = False
+                for data in dateSelectedFiles:
+                    if data["date"] == offsetDate.strftime('%d.%m.%Y'):
+                        print("Found Date")
+                        newFileData.append(data)
+                        dateFound = True
+                        #continue the outer for loop
+                        break
+
+                if not dateFound:
+                    #Append the next date from dateNotSelectedFiles and put it in newFileData
+                    if len(dateNotSelectedFiles) == 0:
+                        break
+
+                    dateNotSelectedFile = dateNotSelectedFiles.pop()
+                    dateNotSelectedFile["date"] = offsetDate.strftime('%d.%m.%Y')
+                    newFileData.append(dateNotSelectedFile)
+                offsetDate += timedelta(days=1)
+
+            for i in range(len(newFileData)):
                 # Open the image file
-                img = self.getAdaptedImage(i)
+                img = self.getAdaptedImage(newFileData[i])
                 if img.mode == 'RGBA':
                     background = Image.new('RGBA', img.size, (255,255,255))
                     img = Image.alpha_composite(background, img)
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
                 background = Image.new('RGB', (800, 480), (255, 255, 255))
-                background.paste(img, (int(-self.fileData[i]["x_offset"]), int(-self.fileData[i]["y_offset"])))
-                path = '/'.join(filename.split('/')[:-1]) + "/" + self.fileNames[i].split('/')[-1].split('.')[0] + ".bmp"
+                background.paste(img, (int(-newFileData[i]["x_offset"]), int(-newFileData[i]["y_offset"])))
+                path = '/'.join(filename.split('/')[:-1]) + "/" + str(i) + "_" + newFileData[i]["date"] + "_" + newFileData[i]["filename"].split('/')[-1].split('.')[0] + ".bmp"
                 # Save the image as BMP
                 background.save(path)
                 print(path)
@@ -177,10 +207,10 @@ class ImageHandler:
         self.fileData[index]["x_offset"] = x_offset
         self.fileData[index]["y_offset"] = y_offset
 
-    def getAdaptedImage(self,index):
-        img = Image.open(self.fileData[index]["filename"])
-        img = img.resize((int(self.fileData[index]["x"] * self.fileData[index]["scale"]), int(self.fileData[index]["y"] * self.fileData[index]["scale"])))        
-        img = img.rotate(self.fileData[index]["rotate"], expand = True)
+    def getAdaptedImage(self, fileData):
+        img = Image.open(fileData["filename"])
+        img = img.resize((int(fileData["x"] * fileData["scale"]), int(fileData["y"] * fileData["scale"])))        
+        img = img.rotate(fileData["rotate"], expand = True)
 
         return img
     def rotateImage(self, angle):
@@ -210,7 +240,7 @@ class ImageHandler:
         self.canvasImage(self.imageSelected)
 
     def canvasImage(self, index):
-        img = self.getAdaptedImage(index)
+        img = self.getAdaptedImage(self.fileData[index])
         photo = ImageTk.PhotoImage(img)
 
 
