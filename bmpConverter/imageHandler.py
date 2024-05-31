@@ -53,8 +53,19 @@ class ImageHandler:
             print("No Image Selected")
             self.main.date_entry.delete(0, 'end')
             return
+        for i in range(len(self.fileData)):
+            if self.fileData[i]["date"] == self.main.date_entry.get():
+                messagebox.showinfo("Error", "Datum bereits vergeben.", parent=self.main.root)
+                return
+            
         self.fileData[self.imageSelected]["date"] = self.main.date_entry.get()
         # self.main.change_date_button.focus_set()
+        # Change the name of the listbox item so that it has the leading date
+        self.main.listbox.delete(self.imageSelected)
+        self.main.listbox.insert(self.imageSelected, self.fileData[self.imageSelected]["date"] + " - " + self.fileNames[self.imageSelected].split('/')[-1])
+        self.main.listbox.selection_set(self.imageSelected)
+        self.main.listbox.itemconfig(self.imageSelected, {'bg':'#66f4b9'})
+
         self.canvasImage(self.imageSelected)
 
         
@@ -65,6 +76,11 @@ class ImageHandler:
             self.main.date_entry.delete(0, 'end')
             return
         self.fileData[self.imageSelected]["date"] = None
+        self.main.listbox.delete(self.imageSelected)
+        self.main.listbox.insert(self.imageSelected, self.fileNames[self.imageSelected].split('/')[-1])
+        # select the new inserted item
+        self.main.listbox.selection_set(self.imageSelected)
+        self.main.listbox.itemconfig(self.imageSelected, {'bg':'white'})
         self.canvasImage(self.imageSelected)
 
 
