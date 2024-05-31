@@ -37,6 +37,7 @@ Preferences preferences;
 // #include "LittleFS.h"
 
 Epd epd;
+unsigned long delta;
 #define SD_CS_PIN 22 // Change this to match your SD card CS pin!
 
 uint16_t width() { return EPD_WIDTH; }
@@ -86,6 +87,8 @@ uint8_t newColorPallete[7*3] = {
   }
 
 void setup() {
+    delta = millis();
+
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
@@ -167,9 +170,10 @@ void loop() {
 void hibernate() {
     Serial.println("start sleep");
 
-    
-    //Deepsleep for 5 seconds
-    esp_deep_sleep(5e6);
+    unsigned long totalRuntime = millis() - delta;
+
+    //Deepsleep for one minut minus totalRuntime
+    esp_deep_sleep(60e6 - totalRuntime * 1000);
     Serial.println("end sleep");
 
 }
