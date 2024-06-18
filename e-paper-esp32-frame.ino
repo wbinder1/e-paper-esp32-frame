@@ -376,17 +376,17 @@ bool drawBmp(const char *filename) {
         int errorG;
         int errorB;
 
-        if(col > w/2){
-          indexColor = depaletteNew(r, g, b);
-          errorR = r - newColorPallete[indexColor*3+0];
-          errorG = g - newColorPallete[indexColor*3+1];
-          errorB = b - newColorPallete[indexColor*3+2];
-        }else{
+        // if(col > w/2){
+        //   indexColor = depaletteNew(r, g, b);
+        //   errorR = r - newColorPallete[indexColor*3+0];
+        //   errorG = g - newColorPallete[indexColor*3+1];
+        //   errorB = b - newColorPallete[indexColor*3+2];
+        // }else{
           indexColor = depalette(r, g, b);
           errorR = r - colorPallete[indexColor*3+0];
           errorG = g - colorPallete[indexColor*3+1];
           errorB = b - colorPallete[indexColor*3+2];
-        }
+        // }
 
       
         
