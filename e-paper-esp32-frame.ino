@@ -209,7 +209,7 @@ void checkSDFiles(){
   if(preferences.getString("fileString", "") != fileString){
     preferences.putString("fileString", fileString);
     preferences.putUInt("fileCount", fileCount);
-    preferences.putUInt("imageIndex", random(fileCount-1));
+    preferences.putUInt("imageIndex", 0);
   }
 }
 String getNextFile(){
@@ -232,17 +232,6 @@ String getNextFile(){
       Serial.println(files[i]);
     }
 
-    randomSeed(fileCount);
-
-    const size_t n = sizeof(files) / sizeof(files[0]);
-
-    for (size_t i = 0; i < n - 1; i++)
-    {
-        size_t j = random(0, n - i);
-        String t = files[i];
-        files[i] = files[j];
-        files[j] = t;
-    }
     unsigned int temp = imageIndex; 
     if(imageIndex >= fileCount - 1){
       imageIndex = 0;
