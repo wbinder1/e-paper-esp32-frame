@@ -173,7 +173,7 @@ void hibernate() {
     unsigned long totalRuntime = millis() - delta;
 
     //Deepsleep for one minut minus totalRuntime
-    esp_deep_sleep(60e6 - totalRuntime * 1000);
+    esp_deep_sleep(24 * 60 * 60e6 - totalRuntime * 1000);
     Serial.println("end sleep");
 
 }
@@ -206,6 +206,7 @@ void checkSDFiles(){
  
     entry.close();  // close the file
   }
+  Serial.println("File String: " + fileString);
   if(preferences.getString("fileString", "") != fileString){
     preferences.putString("fileString", fileString);
     preferences.putUInt("fileCount", fileCount);
