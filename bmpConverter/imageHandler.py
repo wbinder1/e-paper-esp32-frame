@@ -19,7 +19,8 @@ class ImageHandler:
         filetypes = (
             ('Images', '*.jpg'),
             ('Images', '*.jpeg'),
-            ('Images', '*.png')
+            ('Images', '*.png'),
+            ('Images', '*.bmp')
         )
 
         newFileNames = fd.askopenfilenames(
@@ -143,12 +144,18 @@ class ImageHandler:
                     img = img.convert('RGB')
                 background = Image.new('RGB', (800, 480), (255, 255, 255))
                 background.paste(img, (int(-newFileData[i]["x_offset"]), int(-newFileData[i]["y_offset"])))
-                path = '/'.join(filename.split('/')[:-1]) + "/" + str(i) + "_" + newFileData[i]["date"] + "_" + newFileData[i]["filename"].split('/')[-1].split('.')[0] + ".bmp"
+                ascii_filename = newFileData[i]["filename"].split('/')[-1].split('.')[0]
+                ascii_filename = ascii_filename.encode("ascii", errors="ignore").decode()
+                path = '/'.join(filename.split('/')[:-1]) + "/" + str(i).zfill(3) + "_" + newFileData[i]["date"] + "_" + ascii_filename + ".bmp"
                 # Save the image as BMP
                 background.save(path)
                 print(path)
         else:
             return
+        
+        #generate a info.txt file and write the current timestamp in it
+        with open('/'.join(filename.split('/')[:-1]) + "/info.txt", 'w') as f:
+            f.write(str(datetime.now()))
 
         # When the export is done, show a message box
         messagebox.showinfo("Export fertig", "Bilder wurden Erfolgreich Exportiert.", parent=self.main.root)
