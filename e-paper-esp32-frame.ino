@@ -31,6 +31,7 @@
 #include "epd7in3f.h"
 #include <Preferences.h>
 #include <algorithm>
+#include <vector>
 
 Preferences preferences;
 
@@ -174,15 +175,39 @@ void hibernate() {
 
     //Deepsleep for one minut minus totalRuntime
     esp_deep_sleep(24 * 60 * 60e6 - totalRuntime * 1000);
+    // esp_deep_sleep(40e6 - totalRuntime * 1000);
+
     Serial.println("end sleep");
 
 }
 void checkSDFiles(){
+  
+  Serial.println("Checking info.txt File");
+  File infoFile = SD.open("/info.txt");  // Try to open info.txt
+
+  if (!infoFile) {
+    Serial.println("info.txt not found");
+    return;  // Exit if file not found
+  }
+
+  String infoText = "";
+  while (infoFile.available()) {
+    infoText += (char)infoFile.read();  // Read file content into a String
+  }
+  infoFile.close();  // Close the file after reading
+
+  Serial.println("Content of info.txt: " + infoText);
+
   Serial.println("Check SD File");
   File root = SD.open("/");  // open SD card main root
-  String fileString = "";
   u_int16_t fileCount = 0;  
+  if(preferences.getString("checker", "") != infoText){
+        preferences.putUInt("imageIndex", 0);
+  }
+  unsigned int imageIndex = preferences.getUInt("imageIndex", 0);
   bool hasEntry = true;
+  std::vector<String> bmpFiles;
+
 
   while (hasEntry) {
     File entry =  root.openNextFile();  // open file
@@ -199,49 +224,39 @@ void checkSDFiles(){
     String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
  
     if ( str1.equalsIgnoreCase(".bmp") ) {  // if the file has '.bmp' extension
+      bmpFiles.push_back(entry.name());
       fileCount++;  // increment file count 
-      fileString += String(entry.name()) + ",";  // add file name to fileString
-      Serial.println(String(entry.name()));  // print the file name
     }
  
     entry.close();  // close the file
   }
-  Serial.println("File String: " + fileString);
-  if(preferences.getString("fileString", "") != fileString){
-    preferences.putString("fileString", fileString);
+  // Sort the vector of .bmp file names
+  std::sort(bmpFiles.begin(), bmpFiles.end());
+  preferences.putString("fileString", bmpFiles[imageIndex]);
+
+
+  if(preferences.getString("checker", "") != infoText){
+    preferences.putString("checker", infoText);
     preferences.putUInt("fileCount", fileCount);
-    preferences.putUInt("imageIndex", 0);
   }
 }
 String getNextFile(){
-  String fileString = preferences.getString("fileString", "");
+  // String fileString = preferences.getString("fileString", "");
   unsigned int fileCount = preferences.getUInt("fileCount", 0);
   unsigned int imageIndex = preferences.getUInt("imageIndex", 0);
-  Serial.println("File String: " + fileString);
-  Serial.println("File Count: " + String(fileCount));
-  Serial.println("Image Index: " + String(imageIndex));
+  // Serial.println("File String: " + fileString);
+  // Serial.println("File Count: " + String(fileCount));
+  // Serial.println("Image Index: " + String(imageIndex));
 
-  String files[fileCount];
-    int i = 0;
-    while(fileString.indexOf(",") > 0){
-      files[i] = fileString.substring(0, fileString.indexOf(","));
-      fileString = fileString.substring(fileString.indexOf(",")+1);
-      i++;
-    }
-    Serial.println("Files: ");
-    for(int i = 0; i < fileCount; i++){
-      Serial.println(files[i]);
-    }
+  unsigned int temp = imageIndex; 
+  if(imageIndex >= fileCount - 1){
+    imageIndex = 0;
+  }else{
+    imageIndex++;
+  }
+  preferences.putUInt("imageIndex", imageIndex);
 
-    unsigned int temp = imageIndex; 
-    if(imageIndex >= fileCount - 1){
-      imageIndex = 0;
-    }else{
-      imageIndex++;
-    }
-    preferences.putUInt("imageIndex", imageIndex);
-
-    return "/" + files[temp];
+  return "/" + preferences.getString("fileString", "");
 }
 
 bool drawBmp(const char *filename) {
