@@ -120,7 +120,8 @@ void setup() {
     } else {
       Serial.println("Did not wake up from deep sleep.");
     }
-    
+    delay(1000);
+    // SD.begin(SD_CS_PIN, vspi);
     while(!SD.begin(SD_CS_PIN, vspi)){
       Serial.println("Card Mount Failed");
       ESP.restart();
@@ -174,8 +175,8 @@ void hibernate() {
     unsigned long totalRuntime = millis() - delta;
 
     //Deepsleep for one minut minus totalRuntime
-    // esp_deep_sleep(24 * 60 * 60e6 - totalRuntime * 1000);
-    esp_deep_sleep(40e6 - totalRuntime * 1000);
+    esp_deep_sleep(24 * 60 * 60e6 - totalRuntime * 1000);
+    // esp_deep_sleep(60e6 - totalRuntime * 1000);
 
     Serial.println("end sleep");
 
@@ -198,55 +199,55 @@ void checkSDFiles(){
 
   Serial.println("Content of info.txt: " + infoText);
 
-  Serial.println("Check SD File");
-  File root = SD.open("/");  // open SD card main root
-  u_int16_t fileCount = 0;  
   if(preferences.getString("checker", "") != infoText){
-        preferences.putUInt("imageIndex", 0);
-  }
-  unsigned int imageIndex = preferences.getUInt("imageIndex", 0);
-  bool hasEntry = true;
-  std::vector<String> bmpFiles;
+    Serial.println("Check SD File");
+    File root = SD.open("/");  // open SD card main root
+    u_int16_t fileCount = 0;  
+    String fileString = "";
+    std::vector<String> bmpFiles;
 
+    while (true) {
+      File entry =  root.openNextFile();  // open file
 
-  while (hasEntry) {
-    File entry =  root.openNextFile();  // open file
-
-    if (!entry) {
-      Serial.println("No more files");
-      // no more files
-      root.close();
-      hasEntry = false;
-      break;
+      if (!entry) {
+        Serial.println("No more files");
+        // no more files
+        root.close();
+        break;
+      }
+  
+      uint8_t nameSize = String(entry.name()).length();  // get file name size
+      String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
+  
+      if ( str1.equalsIgnoreCase(".bmp") ) {  // if the file has '.bmp' extension
+        bmpFiles.push_back(entry.name());
+        Serial.println(String(entry.name()));  // print the file name
+      }
+  
+      entry.close();  // close the file
     }
- 
-    uint8_t nameSize = String(entry.name()).length();  // get file name size
-    String str1 = String(entry.name()).substring( nameSize - 4 );  // save the last 4 characters (file extension)
- 
-    if ( str1.equalsIgnoreCase(".bmp") ) {  // if the file has '.bmp' extension
-      bmpFiles.push_back(entry.name());
-      fileCount++;  // increment file count 
+    std::sort(bmpFiles.begin(), bmpFiles.end());
+
+    for (int i = 0; i < bmpFiles.size(); i++) {
+      fileString += bmpFiles[i] + ",";  // add file name to fileString
     }
- 
-    entry.close();  // close the file
-  }
-  // Sort the vector of .bmp file names
-  std::sort(bmpFiles.begin(), bmpFiles.end());
-  preferences.putString("fileString", bmpFiles[imageIndex]);
-
-
-  if(preferences.getString("checker", "") != infoText){
+    preferences.putUInt("fileCount", bmpFiles.size());
+    preferences.putUInt("imageIndex", 0);
     preferences.putString("checker", infoText);
-    preferences.putUInt("fileCount", fileCount);
+
+    //save the fileString to a txt file
+    File file = SD.open("/fileString.txt", FILE_WRITE);
+    if(!file){
+      Serial.println("Failed to open file for writing");
+      return;
+    }
+    file.print(fileString);
+    file.close();
   }
 }
 String getNextFile(){
-  // String fileString = preferences.getString("fileString", "");
   unsigned int fileCount = preferences.getUInt("fileCount", 0);
   unsigned int imageIndex = preferences.getUInt("imageIndex", 0);
-  // Serial.println("File String: " + fileString);
-  // Serial.println("File Count: " + String(fileCount));
-  // Serial.println("Image Index: " + String(imageIndex));
 
   unsigned int temp = imageIndex; 
   if(imageIndex >= fileCount - 1){
@@ -256,7 +257,30 @@ String getNextFile(){
   }
   preferences.putUInt("imageIndex", imageIndex);
 
-  return "/" + preferences.getString("fileString", "");
+  //read fileString from txt file
+  File file = SD.open("/fileString.txt");
+  if(!file){
+    Serial.println("Failed to open file for reading");
+    return "";
+  }
+  String fileString = "";
+  while(file.available()){
+    fileString += (char)file.read();
+  }
+  file.close();
+  // Serial.println("fileString: " + fileString);
+
+  //get the next file from the fileString based on imageIndex
+  int start = 0;
+  int end = fileString.indexOf(",", start);
+  for(int i = 0; i < temp; i++){
+    start = end + 1;
+    end = fileString.indexOf(",", start);
+  }
+  String nextFile = fileString.substring(start, end);
+  Serial.println("nextFile: " + nextFile);
+
+  return "/" + nextFile;
 }
 
 bool drawBmp(const char *filename) {
