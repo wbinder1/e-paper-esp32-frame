@@ -33,6 +33,14 @@
 #include <algorithm>
 #include <vector>
 
+#include <WiFi.h>
+#include <ezTime.h>
+
+
+const char* ssid       = "WLAN";
+const char* password   = "20012017";
+const char* ntpServer = "europe.pool.ntp.org";
+
 Preferences preferences;
 
 // #include "LittleFS.h"
@@ -88,15 +96,31 @@ uint8_t newColorPallete[7*3] = {
   }
 
 void setup() {
+    Serial.begin(115200);
     delta = millis();
 
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_OFF);
+
+    WiFi.begin(ssid, password);
+
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(1000);
+    }
+
+    setServer(ntpServer);
+    setTimeZone("Europe/Berlin");
+
+    if (!waitForSync()) { // Wait up to 10 seconds
+      Serial.println("Time sync failed");
+    } else {
+      String time = dateTime("H:i:s d/M/Y");
+      Serial.println(time);
+    }
     
     delay(1000);
-    Serial.begin(115200);
     preferences.begin("e-paper", false);
     delay(1000);
     // unsigned int counter = preferences.getUInt("imageIndex", 0);
