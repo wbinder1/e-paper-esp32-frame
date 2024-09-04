@@ -33,6 +33,8 @@
 #include <algorithm>
 #include <vector>
 
+#define TRANSISTOR_PIN 26  // Choose GPIO 0 (D3 on FireBeetle2)
+
 Preferences preferences;
 
 // #include "LittleFS.h"
@@ -94,6 +96,9 @@ void setup() {
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_OFF);
+
+    pinMode(TRANSISTOR_PIN, OUTPUT);
+    digitalWrite(TRANSISTOR_PIN, HIGH); 
     
     delay(1000);
     Serial.begin(115200);
@@ -171,6 +176,8 @@ void loop() {
 }
 void hibernate() {
     Serial.println("start sleep");
+
+    digitalWrite(TRANSISTOR_PIN, LOW);  // Turn off external components
 
     unsigned long totalRuntime = millis() - delta;
 
