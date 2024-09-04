@@ -1,29 +1,3 @@
-/**
-    @filename   :   EPD_7in3f.ino
-    @brief      :   EPD_7in3 e-paper F display demo
-    @author     :   Waveshare
-
-    Copyright (C) Waveshare     10 21 2022
-
-   Permission is hereby granted, free of charge, to any person obtaining a copy
-   of this software and associated documnetation files (the "Software"), to deal
-   in the Software without restriction, including without limitation the rights
-   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-   copies of the Software, and to permit persons to  whom the Software is
-   furished to do so, subject to the following conditions:
-
-   The above copyright notice and this permission notice shall be included in
-   all copies or substantial portions of the Software.
-
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   FITNESS OR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   LIABILITY WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-   THE SOFTWARE.
-*/
-
 #include <SPI.h>
 #include <FS.h>
 #include <SD.h>
@@ -33,13 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <WiFi.h>
-#include <ezTime.h>
-
-
-const char* ssid       = "WLAN";
-const char* password   = "20012017";
-const char* ntpServer = "europe.pool.ntp.org";
+#include "time_utils.h"
 
 #define TRANSISTOR_PIN 26  // Choose GPIO 0 (D3 on FireBeetle2)
 
@@ -64,16 +32,6 @@ uint8_t colorPallete[7*3] = {
 	255, 243, 56,
 	232, 126, 0,
 };
-
-uint8_t newColorPallete[7*3] = {
-0, 0, 0,
-	255, 255, 255,
-	67, 170, 28,
-	36, 36, 185,
-	165, 0, 0,
-	255, 243, 56,
-	232, 126, 0,
-  };
 
 //uint8_t output_buffer[EPD_WIDTH * EPD_HEIGHT / 4];
 
@@ -106,28 +64,10 @@ void setup() {
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
     esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_OFF);
 
-    WiFi.begin(ssid, password);
-
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(1000);
-    }
-
-    setServer(ntpServer);
-    setTimeZone("Europe/Berlin");
-
-    if (!waitForSync()) { // Wait up to 10 seconds
-      Serial.println("Time sync failed");
-    } else {
-      String time = dateTime("H:i:s d/M/Y");
-      Serial.println(time);
-    }
-
-    pinMode(TRANSISTOR_PIN, OUTPUT);
-    digitalWrite(TRANSISTOR_PIN, HIGH); 
+    delay(2000);
     
-    delay(1000);
+    
     preferences.begin("e-paper", false);
-    delay(1000);
     // unsigned int counter = preferences.getUInt("imageIndex", 0);
       
     // // Increase counter by 1
@@ -149,15 +89,19 @@ void setup() {
     } else {
       Serial.println("Did not wake up from deep sleep.");
     }
-    delay(1000);
+
+    pinMode(TRANSISTOR_PIN, OUTPUT);
+    digitalWrite(TRANSISTOR_PIN, HIGH); 
+    delay(10);
+
     // SD.begin(SD_CS_PIN, vspi);
     while(!SD.begin(SD_CS_PIN, vspi)){
       Serial.println("Card Mount Failed");
       ESP.restart();
     }
-    delay(1000);
 
-    // testTXT();
+    // Initialize and get the time
+    initializeTime();
 
     if (epd.Init() != 0) {
         Serial.println("eP init F");
@@ -203,10 +147,8 @@ void hibernate() {
 
     digitalWrite(TRANSISTOR_PIN, LOW);  // Turn off external components
 
-    unsigned long totalRuntime = millis() - delta;
-
     //Deepsleep for one minut minus totalRuntime
-    esp_deep_sleep(24 * 60 * 60e6 - totalRuntime * 1000);
+    esp_deep_sleep(getSecondsTillNextImage(delta));
     // esp_deep_sleep(60e6 - totalRuntime * 1000);
 
     Serial.println("end sleep");
@@ -366,30 +308,11 @@ bool drawBmp(const char *filename) {
     uint32_t lineSize = ((bitDepth * w +31) >> 5) * 4;
     uint8_t lineBuffer[lineSize];
     uint8_t nextLineBuffer[lineSize];
-    // bmpFS.read(nextLineBuffer, sizeof(nextLineBuffer));
 
     epd.SendCommand(0x10); // start data frame
 
     epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_7IN3F_WHITE); // fill area on top of pic white
     
-    // uint8_t colorArray[2][10][3];
-
-    //  for (row = 1; row >= 0; row--) {
-    //     bmpFS.read(lineBuffer, sizeof(lineBuffer));
-    //     uint8_t*  bptr = lineBuffer;
-
-    //     for (uint16_t col = 0; col < 10; col++) {
-    //       b = *bptr++;
-    //       g = *bptr++;
-    //       r = *bptr++;
-
-    //       colorArray[row][col][0] = r;
-    //       colorArray[row][col][1] = g;
-    //       colorArray[row][col][2] = b;
-    //     }
-    // }
-    // Serial.println("Color Array erstellt");
-
     // row is decremented as the BMP image is drawn bottom up
     bmpFS.read(lineBuffer, sizeof(lineBuffer));
     //reverse linBuffer with the alorithm library 
@@ -436,84 +359,63 @@ bool drawBmp(const char *filename) {
         int errorG;
         int errorB;
 
-        // if(col > w/2){
-        //   indexColor = depaletteNew(r, g, b);
-        //   errorR = r - newColorPallete[indexColor*3+0];
-        //   errorG = g - newColorPallete[indexColor*3+1];
-        //   errorB = b - newColorPallete[indexColor*3+2];
-        // }else{
-          indexColor = depalette(r, g, b);
-          errorR = r - colorPallete[indexColor*3+0];
-          errorG = g - colorPallete[indexColor*3+1];
-          errorB = b - colorPallete[indexColor*3+2];
-        // }
-
       
+        indexColor = depalette(r, g, b);
+        errorR = r - colorPallete[indexColor*3+0];
+        errorG = g - colorPallete[indexColor*3+1];
+        errorB = b - colorPallete[indexColor*3+2];
         
-      if(col < w-1){
+        
+        if(col < w-1){
           bptr[0] = constrain(bptr[0] + (7*errorR/16), 0, 255);
           bptr[1] = constrain(bptr[1] + (7*errorG/16), 0, 255);
           bptr[2] = constrain(bptr[2] + (7*errorB/16), 0, 255);
-      }
+        }
 
-      if(row > 0){
+        if(row > 0){
           if(col > 0){
-              bnptr[-4] = constrain(bnptr[-4] + (3*errorR/16), 0, 255);
-              bnptr[-5] = constrain(bnptr[-5] + (3*errorG/16), 0, 255);
-              bnptr[-6] = constrain(bnptr[-6] + (3*errorB/16), 0, 255);
+            bnptr[-4] = constrain(bnptr[-4] + (3*errorR/16), 0, 255);
+            bnptr[-5] = constrain(bnptr[-5] + (3*errorG/16), 0, 255);
+            bnptr[-6] = constrain(bnptr[-6] + (3*errorB/16), 0, 255);
           }
           bnptr[-1] = constrain(bnptr[-1] + (5*errorR/16), 0, 255);
           bnptr[-2] = constrain(bnptr[-2] + (5*errorG/16), 0, 255);
           bnptr[-3] = constrain(bnptr[-3] + (5*errorB/16), 0, 255);
 
           if(col < w-1){
-              bnptr[0] = constrain(bnptr[0] + (1*errorR/16), 0, 255);
-              bnptr[1] = constrain(bnptr[1] + (1*errorG/16), 0, 255);
-              bnptr[2] = constrain(bnptr[2] + (1*errorB/16), 0, 255);
+            bnptr[0] = constrain(bnptr[0] + (1*errorR/16), 0, 255);
+            bnptr[1] = constrain(bnptr[1] + (1*errorG/16), 0, 255);
+            bnptr[2] = constrain(bnptr[2] + (1*errorB/16), 0, 255);
           }
-      }
-
-        switch (indexColor)
-        {
-        case 0:
-          color = EPD_7IN3F_BLACK;
-          break;
-        case 1:
-          color = EPD_7IN3F_WHITE;
-          break;
-        case 2:
-          color = EPD_7IN3F_GREEN;
-          break;
-        case 3:
-          color = EPD_7IN3F_BLUE;
-          break;
-        case 4:
-          color = EPD_7IN3F_RED;
-          break;
-        case 5:
-          color = EPD_7IN3F_YELLOW;
-          break;
-        case 6:
-          color = EPD_7IN3F_ORANGE;
-          break;
-        case 7:
-          color = EPD_7IN3F_WHITE;
-          break;
-        
-       
         }
-        // uint8_t color = EPD_7IN3F_WHITE;
-        // if (r <= 128 && g <= 128 && b <= 128) {
-        //   color = EPD_7IN3F_BLACK;
-        // } else if (r > 200 && g > 200 && b > 200) {
-        //   color = EPD_7IN3F_WHITE;
-        // } else if (b > 128) {
-        //   color = EPD_7IN3F_BLUE;
-        // } else if (g > 128 && r <= 128) {
-        //   color = EPD_7IN3F_GREEN;
-        // } else {
-        //   color = (g > 140) ? EPD_7IN3F_YELLOW : (g > 64) ? EPD_7IN3F_ORANGE : EPD_7IN3F_RED;
-        // }
+
+        switch (indexColor){
+          case 0:
+            color = EPD_7IN3F_BLACK;
+            break;
+          case 1:
+            color = EPD_7IN3F_WHITE;
+            break;
+          case 2:
+            color = EPD_7IN3F_GREEN;
+            break;
+          case 3:
+            color = EPD_7IN3F_BLUE;
+            break;
+          case 4:
+            color = EPD_7IN3F_RED;
+            break;
+          case 5:
+            color = EPD_7IN3F_YELLOW;
+            break;
+          case 6:
+            color = EPD_7IN3F_ORANGE;
+            break;
+          case 7:
+            color = EPD_7IN3F_WHITE;
+            break;
+        }
+
         uint32_t buf_location = (row*(width()/2)+col/2);
         if (col & 0x01) {
           output |= color;
@@ -543,24 +445,6 @@ int depalette( uint8_t r, uint8_t g, uint8_t b ){
 		int diffr = ((int)r) - ((int)colorPallete[p*3+0]);
 		int diffg = ((int)g) - ((int)colorPallete[p*3+1]);
 		int diffb = ((int)b) - ((int)colorPallete[p*3+2]);
-		int diff = (diffr*diffr) + (diffg*diffg) + (diffb * diffb);
-		if( diff < mindiff )
-		{
-			mindiff = diff;
-			bestc = p;
-		}
-	}
-	return bestc;
-}
-int depaletteNew( uint8_t r, uint8_t g, uint8_t b ){
-	int p;
-	int mindiff = 100000000;
-	int bestc = 0;
-	for( p = 0; p < sizeof(newColorPallete)/3; p++ )
-	{
-		int diffr = ((int)r) - ((int)newColorPallete[p*3+0]);
-		int diffg = ((int)g) - ((int)newColorPallete[p*3+1]);
-		int diffb = ((int)b) - ((int)newColorPallete[p*3+2]);
 		int diff = (diffr*diffr) + (diffg*diffg) + (diffb * diffb);
 		if( diff < mindiff )
 		{
