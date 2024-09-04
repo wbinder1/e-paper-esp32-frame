@@ -41,6 +41,8 @@ const char* ssid       = "WLAN";
 const char* password   = "20012017";
 const char* ntpServer = "europe.pool.ntp.org";
 
+#define TRANSISTOR_PIN 26  // Choose GPIO 0 (D3 on FireBeetle2)
+
 Preferences preferences;
 
 // #include "LittleFS.h"
@@ -119,6 +121,9 @@ void setup() {
       String time = dateTime("H:i:s d/M/Y");
       Serial.println(time);
     }
+
+    pinMode(TRANSISTOR_PIN, OUTPUT);
+    digitalWrite(TRANSISTOR_PIN, HIGH); 
     
     delay(1000);
     preferences.begin("e-paper", false);
@@ -195,6 +200,8 @@ void loop() {
 }
 void hibernate() {
     Serial.println("start sleep");
+
+    digitalWrite(TRANSISTOR_PIN, LOW);  // Turn off external components
 
     unsigned long totalRuntime = millis() - delta;
 
