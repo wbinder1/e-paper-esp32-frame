@@ -1,6 +1,6 @@
 #include "time_utils.h"
 #include <WiFi.h>
-#include <ezTime.h>
+// #include "time.h"
 #include <SD.h>
 #include <SPI.h>
 #include <ArduinoJson.h>
@@ -8,13 +8,25 @@
 const char* ntpServer = "europe.pool.ntp.org";
 const long  gmtOffset_sec = 3600; // GMT+1
 const int   daylightOffset_sec = 3600; // Daylight saving time offset
+bool wifiWorking = false;
 bool timeWorking = false;
+
+#define USE_MOCK_TIME 0
+
+#if USE_MOCK_TIME
+  bool getMockLocalTime(struct tm *timeinfo) {
+      // Simulate obtaining time by setting a fixed time or incrementing a counter
+      static time_t mockTime = 1725514140;
+      *timeinfo = *localtime(&mockTime);
+      return true;
+  }
+#endif
 
 // Function declarations
 // void initializeTime();
 
 // Function definitions
-void initializeTime() {
+void initializeWifi() {
 
     // Open setup.json file
     File file = SD.open("/setup.json");
@@ -56,26 +68,50 @@ void initializeTime() {
         return;
       }
     }
-    // Init and get the time
+    wifiWorking = true;
+    Serial.println("Connected to WiFi");
+}
+void initializeTime() {
+    if(!wifiWorking){
+      Serial.println("Failed to obtain time, no wifi connection");
+      return;
+    }
+    struct tm timeinfo;
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
-    // Check if time was successfully obtained
-    struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
-        Serial.println("Failed to obtain time");
+    // Retry in case of failure in getting time
+    int attempts = 0; // Reset attempts for time-sync
+    while (
+      #if USE_MOCK_TIME
+              !getMockLocalTime(&timeinfo)
+      #else
+              !getLocalTime(&timeinfo)
+      #endif
+    ) { // Increased attempts
+      Serial.println("Failed to obtain time, retrying...");
+      delay(1000); // Delay before retrying
+      attempts++;
+      if(attempts == 10){
+        Serial.println("Failed to obtain time for good");
         return;
+      }
     }
+    
     timeWorking = true;
     Serial.println("Time successfully obtained");
 }
 
-
 long getSecondsTillNextImage(long delta){
 
     struct tm timeinfo;
-    if(!timeWorking || !getLocalTime(&timeinfo)){
+    #if USE_MOCK_TIME
+      bool timeObtained = getMockLocalTime(&timeinfo);
+    #else
+      bool timeObtained = getLocalTime(&timeinfo);
+    #endif
+    if(!timeWorking || !timeObtained){
       unsigned int totalRuntime = millis() - delta;
-      Serial.println("No wifi sleep time: " + String(24 * 60 * 60e6 - totalRuntime * 1000));
+      Serial.println("No time sleep time: " + String(24 * 60 * 60e6 - totalRuntime * 1000));
       return 24 * 60 * 60e6 - totalRuntime * 1000;
     }
 
@@ -89,7 +125,8 @@ long getSecondsTillNextImage(long delta){
 
     // Calculate the time difference
     int timeDiff;
-    if (currentSeconds <= targetSeconds) {
+    // If current time is before or exactly 09:30 AM, calculate the difference to 10:00 AM
+    if (currentSeconds <= targetSeconds - 30*60) {
       // If current time is before or exactly 10:00 AM
       timeDiff = targetSeconds - currentSeconds;
     } else {
@@ -99,5 +136,5 @@ long getSecondsTillNextImage(long delta){
     }
 
     Serial.println("Time difference: " + String(timeDiff) + " seconds");
-    return timeDiff;
+    return timeDiff * 60e6;
 }

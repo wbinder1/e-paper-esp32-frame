@@ -59,13 +59,10 @@ void setup() {
     Serial.begin(115200);
     delta = millis();
 
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_OFF);
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
-    esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_OFF);
-
-    delay(2000);
-    
+    // esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_OFF);
+    // esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
+    // esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
+    // esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_OFF);    
     
     preferences.begin("e-paper", false);
     // unsigned int counter = preferences.getUInt("imageIndex", 0);
@@ -101,6 +98,7 @@ void setup() {
     }
 
     // Initialize and get the time
+    initializeWifi();
     initializeTime();
 
     if (epd.Init() != 0) {
@@ -118,6 +116,7 @@ void setup() {
     checkSDFiles();
     String file = getNextFile();
     drawBmp(file.c_str());
+    digitalWrite(TRANSISTOR_PIN, LOW);  // Turn off external components
 
     //Serial.print("eP Clr\r\n ");
     // epd.Clear(EPD_7IN3F_WHITE);
@@ -144,8 +143,6 @@ void loop() {
 }
 void hibernate() {
     Serial.println("start sleep");
-
-    digitalWrite(TRANSISTOR_PIN, LOW);  // Turn off external components
 
     //Deepsleep for one minut minus totalRuntime
     esp_deep_sleep(getSecondsTillNextImage(delta));
@@ -219,17 +216,6 @@ void checkSDFiles(){
   }
 }
 String getNextFile(){
-  unsigned int fileCount = preferences.getUInt("fileCount", 0);
-  unsigned int imageIndex = preferences.getUInt("imageIndex", 0);
-
-  unsigned int temp = imageIndex; 
-  if(imageIndex >= fileCount - 1){
-    imageIndex = 0;
-  }else{
-    imageIndex++;
-  }
-  preferences.putUInt("imageIndex", imageIndex);
-
   //read fileString from txt file
   File file = SD.open("/fileString.txt");
   if(!file){
@@ -241,6 +227,65 @@ String getNextFile(){
     fileString += (char)file.read();
   }
   file.close();
+
+  if(timeWorking){
+    struct tm timeinfo;
+    #if USE_MOCK_TIME
+      bool timeObtained = getMockLocalTime(&timeinfo);
+    #else
+      bool timeObtained = getLocalTime(&timeinfo);
+    #endif
+    if(!timeObtained){
+      Serial.println("Failed to obtain time");
+      return "";
+    }
+
+    String date;
+    Serial.println("timeinfo.tm_hour: " + String(timeinfo.tm_hour));
+    Serial.println("timeinfo.tm_min: " + String(timeinfo.tm_min));
+    if (timeinfo.tm_hour < 9 || (timeinfo.tm_hour == 9 && timeinfo.tm_min < 30)) {
+      Serial.println("Getting the date of the previous day");
+      // Get the date of the previous day
+      time_t previousDay = mktime(&timeinfo) - 24 * 60 * 60;
+      struct tm* previousDayInfo = localtime(&previousDay);
+      date = String(previousDayInfo->tm_mday < 10 ? "0" : "") + String(previousDayInfo->tm_mday) + "." + String((previousDayInfo->tm_mon + 1) < 10 ? "0" : "") + String(previousDayInfo->tm_mon + 1);
+    } else {
+      date = String(timeinfo.tm_mday < 10 ? "0" : "") + String(timeinfo.tm_mday) + "." + String((timeinfo.tm_mon + 1) < 10 ? "0" : "") + String(timeinfo.tm_mon + 1);
+    }
+    Serial.println("date: " + date);
+    int start = 0;
+    int end = fileString.indexOf(",", start);
+    String nextFile = "";
+    while (true) {
+      String currentFile = fileString.substring(start, end);
+      Serial.println("currentFile: " + currentFile);
+      Serial.println("currentFile.indexOf(date): " + currentFile.indexOf(date));
+      if (currentFile.indexOf(date) != -1) {
+        nextFile = currentFile;
+        break;
+      }
+      start = end + 1;
+      end = fileString.indexOf(",", start);
+      if (end == -1) {
+        break;
+      }
+    }
+
+    if (nextFile != "") {
+      return "/" + nextFile;
+    }
+  }
+  unsigned int fileCount = preferences.getUInt("fileCount", 0);
+  unsigned int imageIndex = preferences.getUInt("imageIndex", 0);
+
+  unsigned int temp = imageIndex; 
+  if(imageIndex >= fileCount - 1){
+    imageIndex = 0;
+  }else{
+    imageIndex++;
+  }
+  preferences.putUInt("imageIndex", imageIndex);
+
   // Serial.println("fileString: " + fileString);
 
   //get the next file from the fileString based on imageIndex

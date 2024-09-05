@@ -5,6 +5,7 @@ from tkinter import Canvas
 from PIL import ImageTk, Image
 from tkinter import Tk, messagebox
 from datetime import datetime, timedelta
+import re
 
 class ImageHandler:
     main = None
@@ -144,8 +145,16 @@ class ImageHandler:
                     img = img.convert('RGB')
                 background = Image.new('RGB', (800, 480), (255, 255, 255))
                 background.paste(img, (int(-newFileData[i]["x_offset"]), int(-newFileData[i]["y_offset"])))
-                ascii_filename = newFileData[i]["filename"].split('/')[-1].split('.')[0]
+                print(newFileData[i]["filename"])
+                # ascii_filename = newFileData[i]["filename"].split('/')[-1].split('.')[0]
+                filename_with_extension = newFileData[i]["filename"].split('/')[-1]
+                ascii_filename = filename_with_extension.rsplit('.', 1)[0]
+                print(ascii_filename)
+                pattern = r"\d{3}_\d{2}\.\d{2}\.\d{4}_"
+                ascii_filename = re.sub(pattern, '', ascii_filename)
+                print(ascii_filename)
                 ascii_filename = ascii_filename.encode("ascii", errors="ignore").decode()
+                print(ascii_filename)
                 path = '/'.join(filename.split('/')[:-1]) + "/" + str(i).zfill(3) + "_" + newFileData[i]["date"] + "_" + ascii_filename + ".bmp"
                 # Save the image as BMP
                 background.save(path)
