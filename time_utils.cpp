@@ -111,8 +111,9 @@ long getSecondsTillNextImage(long delta){
     #endif
     if(!timeWorking || !timeObtained){
       unsigned int totalRuntime = millis() - delta;
-      Serial.println("No time sleep time: " + String(24 * 60 * 60e6 - totalRuntime * 1000));
-      return 24 * 60 * 60e6 - totalRuntime * 1000;
+      unsigned int totalRuntimeSeconds = totalRuntime / 1000;
+      Serial.println("No time sleep time: " + String(24 * 60 * 60 - totalRuntimeSeconds));
+      return 24 * 60 * 60 - totalRuntimeSeconds;
     }
 
     Serial.println(&timeinfo, "Current time: %A, %B %d %Y %H:%M:%S");
@@ -125,8 +126,8 @@ long getSecondsTillNextImage(long delta){
 
     // Calculate the time difference
     int timeDiff;
-    // If current time is before or exactly 09:30 AM, calculate the difference to 10:00 AM
-    if (currentSeconds <= targetSeconds - 30*60) {
+    // If current time is before or exactly 09:00 AM, calculate the difference to 10:00 AM
+    if (currentSeconds <= targetSeconds - 60*60) {
       // If current time is before or exactly 10:00 AM
       timeDiff = targetSeconds - currentSeconds;
     } else {
@@ -136,5 +137,6 @@ long getSecondsTillNextImage(long delta){
     }
 
     Serial.println("Time difference: " + String(timeDiff) + " seconds");
-    return timeDiff * 60e6;
+    Serial.println("Time difference in microseconds: " + String(timeDiff * 1e6));
+    return timeDiff;
 }

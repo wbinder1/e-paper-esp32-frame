@@ -145,7 +145,7 @@ void hibernate() {
     Serial.println("start sleep");
 
     //Deepsleep for one minut minus totalRuntime
-    esp_deep_sleep(getSecondsTillNextImage(delta));
+    esp_deep_sleep(static_cast<uint64_t>(getSecondsTillNextImage(delta))* 1e6);
     // esp_deep_sleep(60e6 - totalRuntime * 1000);
 
     Serial.println("end sleep");
@@ -243,7 +243,7 @@ String getNextFile(){
     String date;
     Serial.println("timeinfo.tm_hour: " + String(timeinfo.tm_hour));
     Serial.println("timeinfo.tm_min: " + String(timeinfo.tm_min));
-    if (timeinfo.tm_hour < 9 || (timeinfo.tm_hour == 9 && timeinfo.tm_min < 30)) {
+    if (timeinfo.tm_hour < 9) {
       Serial.println("Getting the date of the previous day");
       // Get the date of the previous day
       time_t previousDay = mktime(&timeinfo) - 24 * 60 * 60;
