@@ -31,7 +31,6 @@
 
 #include <stdlib.h>
 #include "epd7in3f.h"
-#include "imagedata.h"
 
 Epd::~Epd() {
 };

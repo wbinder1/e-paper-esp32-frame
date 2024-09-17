@@ -28,6 +28,8 @@ bool timeWorking = false;
 // Function definitions
 void initializeWifi() {
 
+  delay(5000);
+
     // Open setup.json file
     File file = SD.open("/setup.json");
     if (!file) {
@@ -63,7 +65,8 @@ void initializeWifi() {
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
       attempts++;
-      if(attempts == 3){
+      Serial.print(".");
+      if(attempts == 5){
         Serial.println("Failed to connect to WiFi");
         return;
       }

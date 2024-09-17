@@ -1,7 +1,6 @@
 #include <SPI.h>
 #include <FS.h>
 #include <SD.h>
-#include "imagedata.h"
 #include "epd7in3f.h"
 #include <Preferences.h>
 #include <algorithm>
@@ -94,7 +93,8 @@ void setup() {
     // SD.begin(SD_CS_PIN, vspi);
     while(!SD.begin(SD_CS_PIN, vspi)){
       Serial.println("Card Mount Failed");
-      ESP.restart();
+      hibernate();
+      // ESP.restart();
     }
 
     // Initialize and get the time
