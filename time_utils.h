@@ -19,10 +19,11 @@ extern const long gmtOffset_sec;
 extern const int daylightOffset_sec;
 extern bool wifiWorking;
 extern bool timeWorking;
+extern struct tm timeinfo;
 
 // Function declarations
 void initializeWifi();
 void initializeTime();
-long getSecondsTillNextImage(long delta);
+long getSecondsTillNextImage(long delta, long deltaSinceTimeObtain);
 
 #endif // TIME_UTILS_H

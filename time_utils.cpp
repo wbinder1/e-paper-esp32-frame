@@ -10,6 +10,7 @@ const long  gmtOffset_sec = 3600; // GMT+1
 const int   daylightOffset_sec = 3600; // Daylight saving time offset
 bool wifiWorking = false;
 bool timeWorking = false;
+struct tm timeinfo;
 
 #define USE_MOCK_TIME 0
 
@@ -27,8 +28,6 @@ bool timeWorking = false;
 
 // Function definitions
 void initializeWifi() {
-
-  delay(5000);
 
     // Open setup.json file
     File file = SD.open("/setup.json");
@@ -79,7 +78,6 @@ void initializeTime() {
       Serial.println("Failed to obtain time, no wifi connection");
       return;
     }
-    struct tm timeinfo;
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
     // Retry in case of failure in getting time
@@ -102,17 +100,12 @@ void initializeTime() {
     
     timeWorking = true;
     Serial.println("Time successfully obtained");
+    Serial.println(&timeinfo, "Current time: %A, %B %d %Y %H:%M:%S");
 }
 
-long getSecondsTillNextImage(long delta){
+long getSecondsTillNextImage(long delta, long deltaSinceTimeObtain){
 
-    struct tm timeinfo;
-    #if USE_MOCK_TIME
-      bool timeObtained = getMockLocalTime(&timeinfo);
-    #else
-      bool timeObtained = getLocalTime(&timeinfo);
-    #endif
-    if(!timeWorking || !timeObtained){
+    if(!timeWorking){
       unsigned int totalRuntime = millis() - delta;
       unsigned int totalRuntimeSeconds = totalRuntime / 1000;
       Serial.println("No time sleep time: " + String(24 * 60 * 60 - totalRuntimeSeconds));
@@ -122,8 +115,11 @@ long getSecondsTillNextImage(long delta){
     Serial.println(&timeinfo, "Current time: %A, %B %d %Y %H:%M:%S");
 
     // Calculate the total seconds from midnight to the current time
+    unsigned int totalRuntime = millis() - deltaSinceTimeObtain;
     int currentSeconds = timeinfo.tm_hour * 3600 + timeinfo.tm_min * 60 + timeinfo.tm_sec;
-
+    Serial.println("Current seconds: " + String(currentSeconds));
+    currentSeconds += (totalRuntime / 1000);
+    Serial.println("Current seconds: " + String(currentSeconds));
     // Calculate the total seconds from midnight to 10:00 AM
     int targetSeconds = 10 * 3600;
 

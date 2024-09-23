@@ -16,6 +16,8 @@ Preferences preferences;
 
 Epd epd;
 unsigned long delta;
+unsigned long deltaSinceTimeObtain;
+
 #define SD_CS_PIN 22 // Change this to match your SD card CS pin!
 
 uint16_t width() { return EPD_WIDTH; }
@@ -100,6 +102,7 @@ void setup() {
     // Initialize and get the time
     initializeWifi();
     initializeTime();
+    deltaSinceTimeObtain = millis();
 
     if (epd.Init() != 0) {
         Serial.println("eP init F");
@@ -117,6 +120,7 @@ void setup() {
     String file = getNextFile();
     drawBmp(file.c_str());
     digitalWrite(TRANSISTOR_PIN, LOW);  // Turn off external components
+    preferences.end();
 
     //Serial.print("eP Clr\r\n ");
     // epd.Clear(EPD_7IN3F_WHITE);
@@ -145,7 +149,7 @@ void hibernate() {
     Serial.println("start sleep");
 
     //Deepsleep for one minut minus totalRuntime
-    esp_deep_sleep(static_cast<uint64_t>(getSecondsTillNextImage(delta))* 1e6);
+    esp_deep_sleep(static_cast<uint64_t>(getSecondsTillNextImage(delta, deltaSinceTimeObtain))* 1e6);
     // esp_deep_sleep(60e6 - totalRuntime * 1000);
 
     Serial.println("end sleep");
@@ -228,19 +232,10 @@ String getNextFile(){
   }
   file.close();
 
-  if(timeWorking){
-    struct tm timeinfo;
-    #if USE_MOCK_TIME
-      bool timeObtained = getMockLocalTime(&timeinfo);
-    #else
-      bool timeObtained = getLocalTime(&timeinfo);
-    #endif
-    if(!timeObtained){
-      Serial.println("Failed to obtain time");
-      return "";
-    }
+  String date;
 
-    String date;
+  if(timeWorking){
+
     Serial.println("timeinfo.tm_hour: " + String(timeinfo.tm_hour));
     Serial.println("timeinfo.tm_min: " + String(timeinfo.tm_min));
     if (timeinfo.tm_hour < 9) {
@@ -252,29 +247,56 @@ String getNextFile(){
     } else {
       date = String(timeinfo.tm_mday < 10 ? "0" : "") + String(timeinfo.tm_mday) + "." + String((timeinfo.tm_mon + 1) < 10 ? "0" : "") + String(timeinfo.tm_mon + 1);
     }
-    Serial.println("date: " + date);
-    int start = 0;
-    int end = fileString.indexOf(",", start);
-    String nextFile = "";
-    while (true) {
-      String currentFile = fileString.substring(start, end);
-      Serial.println("currentFile: " + currentFile);
-      Serial.println("currentFile.indexOf(date): " + currentFile.indexOf(date));
-      if (currentFile.indexOf(date) != -1) {
-        nextFile = currentFile;
-        break;
-      }
-      start = end + 1;
-      end = fileString.indexOf(",", start);
-      if (end == -1) {
-        break;
-      }
-    }
+  }else{
+    date = preferences.getString("date", "01.01");
+    int day = date.substring(0, 2).toInt();
+    int month = date.substring(3, 5).toInt();
+    //Added for leap year
+    int year = 2000;
+    struct tm timeinfoTemp = {0};
+    timeinfoTemp.tm_year = year - 1900;
+    timeinfoTemp.tm_mon = month - 1; // tm_mon is 0-based
+    timeinfoTemp.tm_mday = day;
 
-    if (nextFile != "") {
-      return "/" + nextFile;
+    // Add one day
+    timeinfoTemp.tm_mday += 1;
+
+    // Normalize the time structure (this will handle month/year overflow)
+    mktime(&timeinfoTemp);
+
+    // Format the new date back to a string
+    char newDate[6];
+    snprintf(newDate, sizeof(newDate), "%02d.%02d", timeinfoTemp.tm_mday, timeinfoTemp.tm_mon + 1);
+
+    // Save the new date
+    date = String(newDate);
+    Serial.println("New date: " + date);
+  }
+  Serial.println("date: " + date);
+  preferences.putString("date", date);
+  int start = 0;
+  int end = fileString.indexOf(",", start);
+  String nextFile = "";
+  while (true) {
+    String currentFile = fileString.substring(start, end);
+    Serial.println("currentFile: " + currentFile);
+    Serial.println("currentFile.indexOf(date): " + currentFile.indexOf(date));
+    if (currentFile.indexOf(date) != -1) {
+      nextFile = currentFile;
+      break;
+    }
+    start = end + 1;
+    end = fileString.indexOf(",", start);
+    if (end == -1) {
+      break;
     }
   }
+
+  if (nextFile != "") {
+    return "/" + nextFile;
+  }
+  
+  
   unsigned int fileCount = preferences.getUInt("fileCount", 0);
   unsigned int imageIndex = preferences.getUInt("imageIndex", 0);
 
@@ -289,13 +311,13 @@ String getNextFile(){
   // Serial.println("fileString: " + fileString);
 
   //get the next file from the fileString based on imageIndex
-  int start = 0;
-  int end = fileString.indexOf(",", start);
+  start = 0;
+  end = fileString.indexOf(",", start);
   for(int i = 0; i < temp; i++){
     start = end + 1;
     end = fileString.indexOf(",", start);
   }
-  String nextFile = fileString.substring(start, end);
+  nextFile = fileString.substring(start, end);
   Serial.println("nextFile: " + nextFile);
 
   return "/" + nextFile;
