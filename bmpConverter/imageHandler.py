@@ -92,13 +92,15 @@ class ImageHandler:
             messagebox.showinfo("Error", "Es wurden keine Bilder geladen.", parent=self.main.root)
             return
 
-        # Create a file dialog
-        filename = fd.asksaveasfilename(
-            title="Save images as BMP",
-            initialdir="/",
-            initialfile="this-file-name-doesnt-matter.bmp",  # Preset filename
-            filetypes=(("BMP files", "*.bmp"),)
+        # Create a filename dialog
+        filename = fd.askdirectory(
+            title="Select directory to save images",
+            initialdir="/"
         )
+
+        # Check if a filename was selected
+        if not filename:
+            return
 
         # Check if a file was selected
         if filename:
@@ -155,15 +157,16 @@ class ImageHandler:
                 print(ascii_filename)
                 ascii_filename = ascii_filename.encode("ascii", errors="ignore").decode()
                 print(ascii_filename)
-                path = '/'.join(filename.split('/')[:-1]) + "/" + str(i).zfill(3) + "_" + newFileData[i]["date"] + "_" + ascii_filename + ".bmp"
+                path = filename + "/" + str(i).zfill(3) + "_" + newFileData[i]["date"] + "_" + ascii_filename + ".bmp"
                 # Save the image as BMP
+
                 background.save(path)
                 print(path)
         else:
             return
         
         #generate a info.txt file and write the current timestamp in it
-        with open('/'.join(filename.split('/')[:-1]) + "/info.txt", 'w') as f:
+        with open(filename + "/info.txt", 'w') as f:
             f.write(str(datetime.now()))
 
         # When the export is done, show a message box
