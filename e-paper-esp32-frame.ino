@@ -483,6 +483,10 @@ bool drawBmp(const char *filename) {
             break;
         }
 
+        if (col <= 50 && row >= h-50){
+          color = EPD_7IN3F_RED;
+        }
+
         uint32_t buf_location = (row*(width()/2)+col/2);
         if (col & 0x01) {
           output |= color;
