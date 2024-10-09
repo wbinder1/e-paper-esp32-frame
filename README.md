@@ -50,7 +50,7 @@ This project provides a comprehensive installation guide for an e-paper picture 
 9. (Optional) Create a small hole, for example using a soldering iron, between the battery and ESP32 to integrate a toggle switch.
 10. Attach the 3D printed case to the backplate of the picture frame by creating a small slit on the top. You can either glue the case to the backplate or use screws to secure them together. On the opposite side, mount the e-paper display. Connect the ribbon cable of the e-paper to the case through the created slit. For a perfect fit, use the provided `passepartout.pdf` file.
 
-### Convert the images
+## Convert the images
 
 To convert the images, follow these steps:
 
