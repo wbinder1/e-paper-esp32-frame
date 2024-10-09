@@ -3,15 +3,16 @@
 ![ESP e-paper frame](images/e-paper-esp32-frame.jpg?raw=true)
 ![ESP e-paper frame](images/e-paper-esp32-frame-backside.jpg?raw=true)
 
-This project offers a comprehensive installation guide for an e-paper picture frame that updates daily. The frame showcases a Waveshare seven-color e-paper display, which, combined with the implemented Floyd-Steinberg Dithering algorithm, creates the illusion of a greater color depth. Users have the ability to convert their own images using the included BMP-Converter. Furthermore, the frame can be connected to the internet to display specific images on designated days.
-
+This project provides a comprehensive installation guide for an e-paper picture frame that updates daily. The frame features a Waveshare seven-color e-paper display, which, combined with the implemented Floyd-Steinberg Dithering algorithm, creates the illusion of a greater color depth. Users have the ability to convert their own images using the included BMP-Converter. Additionally, the frame can be connected to the internet to display specific images on designated days. The 1000mAh battery is expected to last for approximately 700 days and can be recharged through the ESP32's type-C port.
 
 ## Features
 
-- Display BMP images on the e-paper screen.
-- Handle SD card operations.
-- Manage deep sleep and wake-up functionalities.
-- Use preferences to store and retrieve data.
+- **Daily Updates**: Automatically updates the displayed image daily.
+- **Internet Connectivity**: Connects to the internet to fetch images based on specific dates.
+- **Image Conversion**: Includes a BMP-Converter for converting images to the required format.
+- **Low Power Consumption**: Utilizes the FireBeetle 2 ESP32-E for low power consumption during deep sleep.
+- **Customizable**: Users can convert and display their own images.
+- **3D Printed Case**: Provides a 3D printed case design for housing all components
 
 ## Table of Contents
 
@@ -30,7 +31,7 @@ This project offers a comprehensive installation guide for an e-paper picture fr
 - Waveshare 7.3inch ACeP 7-Color E-Paper E-Ink Display Module + HAT: An e-paper display module with seven colors, SPI communication, featuring 800×480 pixels.
 - Toggle Switch (Optional): A switch used to turn off the power from the battery. (Thread diameter: 5mm)
 - Printed Case: A 3D printed case to hold all the components.
-- Four Heat Inserts and Screws: Hardware components for assembly.
+- Four Heat Inserts and Screws: Hardware components for assembly. (M3)
 - Picture frame: A standard picture frame that can accommodate the e-paper frame.
 
 
