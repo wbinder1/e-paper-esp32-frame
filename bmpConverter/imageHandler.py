@@ -295,6 +295,7 @@ class ImageHandler:
             return
         self.fileData[self.imageSelected]["x_offset"] += x
         self.fileData[self.imageSelected]["y_offset"] += y
+        self.createBackupFile(self.imageSelected)
         self.canvasImage(self.imageSelected)
 
     def changeScale(self, value):
