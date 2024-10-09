@@ -19,6 +19,7 @@ This project provides a comprehensive installation guide for an e-paper picture 
 - [Components](#components)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Convert the images](#convert-the-images)
 - [Contributing](#contributing)
 - [License](#license)
 
