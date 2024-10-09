@@ -18,11 +18,9 @@ This project provides a comprehensive installation guide for an e-paper picture 
 
 - [Components](#components)
 - [Installation](#installation)
-- [Usage](#usage)
 - [Convert the images](#convert-the-images)
 - [Contributing](#contributing)
 - [License](#license)
-
 
 ## Components
 
@@ -40,32 +38,30 @@ This project provides a comprehensive installation guide for an e-paper picture 
 
 1. Clone the repository:
 	```sh
-	git clone https://github.com/yourusername/e-paper-esp32-frame.git
+	git clone https://github.com/Duocervisia/e-paper-esp32-frame.git
 	```
 2. Open the project in Visual Studio Code or another prefered IDE.
-
-## Usage
-
-1. Connect your ESP32 to the e-paper display and SD card module following the `Schematic for Components.png`.
-2. Upload the code to your ESP32.
-3. Convert the images you want to display using the BMP-Converter. See [Convert the images](#convert-the-images). This application can convert most image formats to BMP format with the correct dimensions of 800 x 480 px, which is needed for the microcontroller to display the image. It also provides basic operations to modify the images.
-4. Add the converted images to the SD card, including the info.txt file.
-5. (Optional) Copy the setup.json file to the SD card and set the SSID and password in the file. This allows the ESP32 to connect to the internet. The current date will be pulled from an ntp server, to update the image based on the date specified in the filename using the BMP-Converter. With internet connectivity, the ESP32 will update the image at approximately 10 o'clock. Without internet, the ESP32 will sleep for 24 hours (based on the internal clock) and update the image based on name sorting.
-6. Print the case using a 3D printer.
-7. (Optional) Create a small hole, for example using a soldering iron, between the battery and ESP32 to integrate a toggle switch.
-8. Attach the 3D printed case to the backplate of the picture frame by creating a small slit on the top. You can either glue the case to the backplate or use screws to secure them together. On the opposite side, mount the e-paper display. Connect the ribbon cable of the e-paper to the case through the created slit. For a perfect fit, use the provided `passepartout.pdf` file.
+3. Connect your ESP32 to the e-paper display and SD card module following the `Schematic for Components.png`.
+4. Upload the code to your ESP32.
+5. Convert the images you want to display using the BMP-Converter. See [Convert the images](#convert-the-images). This application can convert most image formats to BMP format with the correct dimensions of 800 x 480 px, which is needed for the microcontroller to display the image. It also provides basic operations to modify the images.
+6. Add the converted images to the SD card, including the info.txt file.
+7. (Optional) Copy the setup.json file to the SD card and set the SSID and password in the file. This allows the ESP32 to connect to the internet. The current date will be pulled from an ntp server, to update the image based on the date specified in the filename using the BMP-Converter. With internet connectivity, the ESP32 will update the image at approximately 10 o'clock. Without internet, the ESP32 will sleep for 24 hours (based on the internal clock) and update the image based on name sorting.
+8. Print the case using a 3D printer.
+9. (Optional) Create a small hole, for example using a soldering iron, between the battery and ESP32 to integrate a toggle switch.
+10. Attach the 3D printed case to the backplate of the picture frame by creating a small slit on the top. You can either glue the case to the backplate or use screws to secure them together. On the opposite side, mount the e-paper display. Connect the ribbon cable of the e-paper to the case through the created slit. For a perfect fit, use the provided `passepartout.pdf` file.
 
 ### Convert the images
 
-To convert the images, start the BMPConverter application following these steps:
+To convert the images, follow these steps:
 
 1. Navigate to the `/bmpConverter/build` directory.
 2. Run the `converter.exe` executable.
 
-Alternatively, run it like this:
+Alternatively, you can follow these steps:
+
 1. Navigate to the `/bmpConverter` directory.
-2. Read the `README` in the directory and install requirements.
-3. Run `converter.py`.
+2. Read the `README` file in the directory and install the required dependencies.
+3. Run the `converter.py` script.
 
 ## Contributing
 
