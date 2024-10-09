@@ -45,7 +45,7 @@ This project provides a comprehensive installation guide for an e-paper picture 
 
 ## Usage
 
-1. Connect your ESP32 to the e-paper display and SD card module following the "Schematic for Components.png".
+1. Connect your ESP32 to the e-paper display and SD card module following the `Schematic for Components.png`.
 2. Upload the code to your ESP32.
 3. Convert the images you want to display using the BMP-Converter. See [Convert the images](#convert-the-images). This application can convert most image formats to BMP format with the correct dimensions of 800 x 480 px, which is needed for the microcontroller to display the image. It also provides basic operations to modify the images.
 4. Add the converted images to the SD card, including the info.txt file.
