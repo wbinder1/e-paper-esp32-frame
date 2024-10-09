@@ -85,10 +85,9 @@ class ImageHandler:
         self.main.listbox.insert(self.imageSelected, self.fileData[self.imageSelected]["date"] + " - " + self.fileData[self.imageSelected]["original_filepath"].split('/')[-1])
         self.main.listbox.selection_set(self.imageSelected)
         self.main.listbox.itemconfig(self.imageSelected, {'bg':'#66f4b9'})
-
+        self.createBackupFile(self.imageSelected)
         self.canvasImage(self.imageSelected)
-
-        
+    
     def deleteImageDate(self):
         print("Setting Image Date")
         if(self.imageSelected == None):
@@ -101,8 +100,8 @@ class ImageHandler:
         # select the new inserted item
         self.main.listbox.selection_set(self.imageSelected)
         self.main.listbox.itemconfig(self.imageSelected, {'bg':'white'})
+        self.createBackupFile(self.imageSelected)
         self.canvasImage(self.imageSelected)
-
 
     def exportImages(self):
         print("Exporting Images")
@@ -185,8 +184,8 @@ class ImageHandler:
 
                 background.save(path)
 
-                if(i == 0):
-                    filePathFromLoading = os.path.dirname(self.fileData[i]["original_filepath"])
+                # if(i == 0):
+                #     filePathFromLoading = os.path.dirname(self.fileData[i]["original_filepath"])
 
                 # print(path)
         else:
@@ -196,8 +195,8 @@ class ImageHandler:
         with open(filepath + "/info.txt", 'w') as f:
             f.write(str(datetime.now()))
 
-        with open(filePathFromLoading + "/backup.json", 'w') as f:
-            json.dump(self.fileData, f)
+        # with open(filePathFromLoading + "/backup.json", 'w') as f:
+        #     json.dump(self.fileData, f)
 
         # When the export is done, show a message box
         messagebox.showinfo("Export fertig", "Bilder wurden Erfolgreich Exportiert.", parent=self.main.root)
@@ -234,6 +233,14 @@ class ImageHandler:
         self.fileData[index]["rotate"] = 0
         self.setImageSize(index)
         self.canvasImage(index)
+        self.createBackupFile(index)
+
+    def createBackupFile(self, index):
+        print("Creating Backup File")
+        filePathFromLoading = os.path.dirname(self.fileData[index]["original_filepath"])
+        with open(filePathFromLoading + "/backup.json", 'w') as f:
+            json.dump(self.fileData, f)
+
 
     def setImageSize(self, index):
         # print(index, self.fileData)
@@ -281,6 +288,7 @@ class ImageHandler:
         self.fileData[self.imageSelected]["rotate"] += angle
         self.fileData[self.imageSelected]["scale"] = 1
         self.setImageSize(self.imageSelected)
+        self.createBackupFile(self.imageSelected)
         self.canvasImage(self.imageSelected)
     def changeOffset(self, x, y):
         if(self.imageSelected == None):
@@ -299,6 +307,7 @@ class ImageHandler:
         self.fileData[self.imageSelected]["x_offset"] += self.fileData[self.imageSelected]["x"]/2 * value
         self.fileData[self.imageSelected]["y_offset"] += self.fileData[self.imageSelected]["y"]/2 * value
         # self.setImageSize(self.imageSelected)
+        self.createBackupFile(self.imageSelected)
         self.canvasImage(self.imageSelected)
 
     def canvasImage(self, index):
