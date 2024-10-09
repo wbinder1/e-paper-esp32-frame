@@ -6,6 +6,8 @@ from PIL import ImageTk, Image
 from tkinter import Tk, messagebox
 from datetime import datetime, timedelta
 import re
+import json
+import os
 
 class ImageHandler:
     main = None
@@ -13,7 +15,6 @@ class ImageHandler:
 
     def __init__(self, main):
         self.main = main
-        self.fileNames = []
         self.fileData = []
 
     def loadImages(self):
@@ -24,27 +25,44 @@ class ImageHandler:
             ('Images', '*.bmp')
         )
 
-        newFileNames = fd.askopenfilenames(
+        newFilePaths = fd.askopenfilenames(
             title='Open image Files',
             initialdir='/',
             filetypes=filetypes)
 
-        if len(newFileNames) == 0:
+        if len(newFilePaths) == 0:
             return
 
-        # Initialize self.fileNames if it doesn't exist
-        if not hasattr(self, 'fileNames') or not isinstance(self.fileNames, list):
-            self.fileNames = list(self.fileNames) if hasattr(self, 'fileNames') else []
+   
+        relative_path = os.path.dirname(newFilePaths[0])
+        tempFileData = []
+        if(len(self.fileData) == 0):
+            backup_file_path = relative_path + "/backup.json"
+            if os.path.exists(backup_file_path):
+                with open(backup_file_path, 'r') as f:
+                    tempFileData = json.load(f)
 
-        # Append new files to the existing list
-        self.fileNames.extend(newFileNames)
 
-        index = len(self.fileNames) - len(newFileNames)
         # Put the fileNames into a scrollable listbox
-        for filename in newFileNames:
-            self.initImage(index, filename)  # Use the last index
-            self.main.listbox.insert(tk.END, filename.split('/')[-1])
-            index += 1
+        for filePath in newFilePaths:
+            # in tempFileData array, check if there is an object with the field "filename" == filePath.split('/')[-1]
+            foundPathInBackup = False
+            for i in range(len(tempFileData)):
+                if tempFileData[i]["filename"] == filePath.split('/')[-1]:
+                    tempFileData[i]["original_filepath"] = filePath
+                    self.fileData.append(tempFileData[i])
+                    foundPathInBackup = True
+                    # self.setImageSize(len(self.fileData)-1)
+                    break
+            if (not foundPathInBackup):
+                print(filePath)
+                self.initImage(filePath)  # Use the last index
+            
+            if(self.fileData[-1]["date"] != None):
+                self.main.listbox.insert(len(self.fileData)-1, self.fileData[-1]["date"] + " - " + self.fileData[-1]["original_filepath"].split('/')[-1])
+                self.main.listbox.itemconfig(len(self.fileData)-1, {'bg':'#66f4b9'})
+            else:
+                self.main.listbox.insert(tk.END, filePath.split('/')[-1])
         self.imageSelected = 0
         self.main.listbox.selection_set(0)
         self.canvasImage(0)
@@ -64,7 +82,7 @@ class ImageHandler:
         # self.main.change_date_button.focus_set()
         # Change the name of the listbox item so that it has the leading date
         self.main.listbox.delete(self.imageSelected)
-        self.main.listbox.insert(self.imageSelected, self.fileData[self.imageSelected]["date"] + " - " + self.fileNames[self.imageSelected].split('/')[-1])
+        self.main.listbox.insert(self.imageSelected, self.fileData[self.imageSelected]["date"] + " - " + self.fileData[self.imageSelected]["original_filepath"].split('/')[-1])
         self.main.listbox.selection_set(self.imageSelected)
         self.main.listbox.itemconfig(self.imageSelected, {'bg':'#66f4b9'})
 
@@ -79,7 +97,7 @@ class ImageHandler:
             return
         self.fileData[self.imageSelected]["date"] = None
         self.main.listbox.delete(self.imageSelected)
-        self.main.listbox.insert(self.imageSelected, self.fileNames[self.imageSelected].split('/')[-1])
+        self.main.listbox.insert(self.imageSelected, self.fileData[self.imageSelected]["original_filepath"].split('/')[-1])
         # select the new inserted item
         self.main.listbox.selection_set(self.imageSelected)
         self.main.listbox.itemconfig(self.imageSelected, {'bg':'white'})
@@ -88,23 +106,23 @@ class ImageHandler:
 
     def exportImages(self):
         print("Exporting Images")
-        if(len(self.fileNames) == 0):
+        if(len(self.fileData) == 0):
             messagebox.showinfo("Error", "Es wurden keine Bilder geladen.", parent=self.main.root)
             return
 
         # Create a filename dialog
-        filename = fd.askdirectory(
+        filepath = fd.askdirectory(
             title="Select directory to save images",
             initialdir="/"
         )
 
         # Check if a filename was selected
-        if not filename:
+        if not filepath:
             return
 
         # Check if a file was selected
-        if filename:
-            print (filename)
+        if filepath:
+            # print (filepath)
             # Loop over the selected images
 
             dateSelectedFiles = [data.copy() for data in self.fileData if data["date"] is not None]
@@ -117,7 +135,7 @@ class ImageHandler:
 
             newFileData = []
 
-            for i in range(len(self.fileNames)):
+            for i in range(len(self.fileData)):
                 dateFound = False
                 for data in dateSelectedFiles:
                     if data["date"] == offsetDate.strftime('%d.%m.%Y'):
@@ -137,6 +155,8 @@ class ImageHandler:
                     newFileData.append(dateNotSelectedFile)
                 offsetDate += timedelta(days=1)
 
+            filePathFromLoading = ""
+
             for i in range(len(newFileData)):
                 # Open the image file
                 img = self.getAdaptedImage(newFileData[i])
@@ -147,27 +167,37 @@ class ImageHandler:
                     img = img.convert('RGB')
                 background = Image.new('RGB', (800, 480), (255, 255, 255))
                 background.paste(img, (int(-newFileData[i]["x_offset"]), int(-newFileData[i]["y_offset"])))
-                print(newFileData[i]["filename"])
+                # print(newFileData[i]["filename"])
                 # ascii_filename = newFileData[i]["filename"].split('/')[-1].split('.')[0]
                 filename_with_extension = newFileData[i]["filename"].split('/')[-1]
                 ascii_filename = filename_with_extension.rsplit('.', 1)[0]
-                print(ascii_filename)
+                # print(ascii_filename)
                 pattern = r"\d{3}_\d{2}\.\d{2}\.\d{4}_"
                 ascii_filename = re.sub(pattern, '', ascii_filename)
-                print(ascii_filename)
+                # print(ascii_filename)
                 ascii_filename = ascii_filename.encode("ascii", errors="ignore").decode()
-                print(ascii_filename)
-                path = filename + "/" + str(i).zfill(3) + "_" + newFileData[i]["date"] + "_" + ascii_filename + ".bmp"
+                # print(ascii_filename)
+                filename = str(i).zfill(3) + "_" + newFileData[i]["date"] + "_" + ascii_filename + ".bmp"
+                    
+                # self.fileData[i]["filename"] = filename
+                path = filepath + "/" + filename
                 # Save the image as BMP
 
                 background.save(path)
-                print(path)
+
+                if(i == 0):
+                    filePathFromLoading = os.path.dirname(self.fileData[i]["original_filepath"])
+
+                # print(path)
         else:
             return
         
         #generate a info.txt file and write the current timestamp in it
-        with open(filename + "/info.txt", 'w') as f:
+        with open(filepath + "/info.txt", 'w') as f:
             f.write(str(datetime.now()))
+
+        with open(filePathFromLoading + "/backup.json", 'w') as f:
+            json.dump(self.fileData, f)
 
         # When the export is done, show a message box
         messagebox.showinfo("Export fertig", "Bilder wurden Erfolgreich Exportiert.", parent=self.main.root)
@@ -176,30 +206,26 @@ class ImageHandler:
         if(self.imageSelected == None):
             return
         self.main.listbox.delete(self.imageSelected)
-        self.fileNames = list(self.fileNames)
-        self.fileNames.pop(self.imageSelected)
-        self.fileNames = tuple(self.fileNames)
         self.fileData.pop(self.imageSelected)
-        if(len(self.fileNames) == 0):
+        if(len(self.fileData) == 0):
             self.imageSelected = None
             self.main.canvas.delete("all")
             return
-        if(self.imageSelected >= len(self.fileNames)):
-            self.imageSelected = len(self.fileNames) - 1
+        if(self.imageSelected >= len(self.fileData)):
+            self.imageSelected = len(self.fileData) - 1
         else:
             self.imageSelected = 0
         self.main.listbox.selection_set(self.imageSelected)
         self.canvasImage(self.imageSelected)
     def deleteAllImages(self):
         self.main.listbox.delete(0, tk.END)
-        self.fileNames = []
         self.fileData = []
         self.imageSelected = None
         self.main.canvas.delete("all")
 
-    def initImage(self, index, filename):
-        self.fileData.append({'x': 0, 'y': 0, 'x_offset' : 0, 'y_offset' : 0, 'rotate' : 0, 'scale' : 1, 'date' : None, 'filename': filename})
-        self.setImageSize(index)
+    def initImage(self, filePath):
+        self.fileData.append({'x': 0, 'y': 0, 'x_offset' : 0, 'y_offset' : 0, 'rotate' : 0, 'scale' : 1, 'date' : None, 'filename': filePath.split('/')[-1], 'original_filepath': filePath})
+        self.setImageSize(len(self.fileData)-1)
 
     def resetImage(self, index):
         self.fileData[index]["x_offset"] = 0
@@ -210,7 +236,8 @@ class ImageHandler:
         self.canvasImage(index)
 
     def setImageSize(self, index):
-        img = Image.open(self.fileData[index]["filename"])
+        # print(index, self.fileData)
+        img = Image.open(self.fileData[index]["original_filepath"])
         x_offset = 0
         y_offset = 0
 
@@ -243,7 +270,7 @@ class ImageHandler:
         self.fileData[index]["y_offset"] = y_offset
 
     def getAdaptedImage(self, fileData):
-        img = Image.open(fileData["filename"])
+        img = Image.open(fileData["original_filepath"])
         img = img.resize((int(fileData["x"] * fileData["scale"]), int(fileData["y"] * fileData["scale"])))        
         img = img.rotate(fileData["rotate"], expand = True)
 

@@ -60,6 +60,8 @@ void setup() {
     Serial.begin(115200);
     delta = millis();
 
+    analogReadResolution(12);
+
     // esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_OFF);
     // esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
     // esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
@@ -385,6 +387,9 @@ bool drawBmp(const char *filename) {
     //reverse linBuffer with the alorithm library 
     std::reverse(lineBuffer, lineBuffer + sizeof(lineBuffer));
 
+    int batteryVolts = analogReadMilliVolts(0);
+    batteryVolts = batteryVolts * 1.69657;
+
     for (row = h-1; row >= 0; row--) {
       // Serial.print("row: "+String(row));
       epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3F_WHITE); // fill area on the left of pic white
@@ -483,7 +488,7 @@ bool drawBmp(const char *filename) {
             break;
         }
 
-        if (col <= 50 && row >= h-50){
+        if (batteryVolts <= 4400 && batteryVolts >=1000 && col <= 50 && row >= h-50){
           color = EPD_7IN3F_RED;
         }
 
