@@ -44,7 +44,7 @@ This project provides a comprehensive installation guide for an e-paper picture 
 4. Upload the code to your ESP32.
 5. Convert the images you want to display using the BMP-Converter. See [Convert the images](#convert-the-images). This application can convert most image formats to BMP format with the correct dimensions of 800 x 480 px, which is needed for the microcontroller to display the image. It also provides basic operations to modify the images.
 6. Add the converted images to the SD card, including the info.txt file.
-8. Print both .stl files that can be found in the `/3D_modell/` directory. Make sure that the Lid is printed with the nail holder facing up. For more detailed information, refer to the [README.md](3D_modell/README.md) in the `3D_modell` directory.
+8. Print both .stl files that can be found in the `/3D_modell` directory. Make sure that the Lid is printed with the nail holder facing up. For more detailed information, refer to the [README.md](3D_modell/README.md) in the `/3D_modell` directory.
 9. (Optional) Create a small hole, for example using a soldering iron, between the battery and ESP32 to integrate a toggle switch.
 10. Attach the 3D printed case to the backplate of the picture frame by creating a small slit on the top. You can either glue the case to the backplate or use screws to secure them together. On the opposite side, mount the e-paper display. Connect the ribbon cable of the e-paper to the case through the created slit. For a perfect fit, use the provided `passepartout.pdf` file.
 
