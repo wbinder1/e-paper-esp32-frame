@@ -65,7 +65,7 @@ void initializeWifi() {
       delay(500);
       attempts++;
       Serial.print(".");
-      if(attempts == 5){
+      if(attempts == 10){
         Serial.println("Failed to connect to WiFi");
         return;
       }
