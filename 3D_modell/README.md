@@ -1,11 +1,11 @@
 # 3D Modell
+- [STL Files](#stl-files)
+- [Modifying the 3D Model Using FreeCAD](#modifying-the-3d-model-using-freecad)
+- [Exporting for Use in Different CAD Software](#exporting-for-use-in-different-cad-software)
 
 ![3D_modell](3D_modell.png)
 
 
-- [STL Files](#stl-files)
-- [Modifying the 3D Model Using FreeCAD](#modifying-the-3d-model-using-freecad)
-- [Exporting for Use in Different CAD Software](#exporting-for-use-in-different-cad-software)
 
 ### STL Files
 To print the `PictureFrameV4-Body.stl`, position it with the flat side at the bottom, as recommended by your printer. The `PictureFrameV4-Lid.stl` is modeled upside down, so you will need to rotate it 180° in your slicer of choice. If available, use organic supports for printing.
