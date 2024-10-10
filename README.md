@@ -58,7 +58,7 @@ To convert the images, follow these steps:
 Alternatively, you can follow these steps:
 
 1. Navigate to the `/bmpConverter` directory.
-2. Read the `README` file in the directory and install the required dependencies.
+2. Read the [README.md](bmpConverter/README.md) file in the directory and install the required dependencies.
 3. Run the `converter.py` script.
 
 ## Contributing
