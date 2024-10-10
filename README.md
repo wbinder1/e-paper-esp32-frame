@@ -28,6 +28,7 @@ This project provides a comprehensive installation guide for an e-paper picture 
 - Li-Po 503450 1000mAh 3.7V with PH2.0 connector: A rechargeable lithium polymer battery for power supply. (Dimensions: 5mm (H) x 34mm (W) x 50mm (L))
 - Micro SD Card Module: A module for handling micro SD cards. (Dimensions: 18mm x 18mm)
 - Waveshare 7.3inch ACeP 7-Color E-Paper E-Ink Display Module + HAT: An e-paper display module with seven colors, SPI communication, featuring 800×480 pixels.
+- PN2222A Transistor: This transistor cuts off power to the SD Card and e-paper display during deep sleep.
 - Toggle Switch (Optional): A switch used to turn off the power from the battery. (Thread diameter: 5mm)
 - Printed Case: A 3D printed case to hold all the components.
 - Four Heat Inserts and Screws: Hardware components for assembly. (M3)
