@@ -30,7 +30,7 @@
 ******************************************************************************/
 
 #include <stdlib.h>
-#include "epd7in3f.h"
+#include "epd7in3e.h"
 
 Epd::~Epd() {
 };
@@ -176,7 +176,7 @@ void Epd::Reset(void) {
     DigitalWrite(reset_pin, HIGH);
     DelayMs(20);   
     DigitalWrite(reset_pin, LOW);                //module reset    
-    DelayMs(1);
+    DelayMs(2);
     DigitalWrite(reset_pin, HIGH);
     DelayMs(20);    
 }
@@ -242,31 +242,31 @@ void Epd::EPD_7IN3F_Display_part(const UBYTE *image, UWORD xstart, UWORD ystart,
 function :  show 7 kind of color block
 parameter:
 ******************************************************************************/
-void Epd::EPD_7IN3F_Show7Block(void)
-{
-    unsigned long i, j, k;
-    unsigned char const Color_seven[8] = 
-    {EPD_7IN3F_BLACK, EPD_7IN3F_BLUE, EPD_7IN3F_GREEN, EPD_7IN3F_ORANGE,
-    EPD_7IN3F_RED, EPD_7IN3F_YELLOW, EPD_7IN3F_WHITE, 0x7};
+// void Epd::EPD_7IN3F_Show7Block(void)
+// {
+//     unsigned long i, j, k;
+//     unsigned char const Color_seven[8] = 
+//     {EPD_7IN3F_BLACK, EPD_7IN3F_BLUE, EPD_7IN3F_GREEN, EPD_7IN3F_ORANGE,
+//     EPD_7IN3F_RED, EPD_7IN3F_YELLOW, EPD_7IN3F_WHITE, 0x7};
 
-    SendCommand(0x10);
-    for(i=0; i<240; i++) {
-        for(k = 0 ; k < 4; k ++) {
-            for(j = 0 ; j < 100; j ++) {
-                SendData((Color_seven[k]<<4) |Color_seven[k]);
-            }
-        }
-    }
+//     SendCommand(0x10);
+//     for(i=0; i<240; i++) {
+//         for(k = 0 ; k < 4; k ++) {
+//             for(j = 0 ; j < 100; j ++) {
+//                 SendData((Color_seven[k]<<4) |Color_seven[k]);
+//             }
+//         }
+//     }
     
-    for(i=0; i<240; i++) {
-        for(k = 4 ; k < 8; k ++) {
-            for(j = 0 ; j < 100; j ++) {
-                SendData((Color_seven[k]<<4) |Color_seven[k]);
-            }
-        }
-    }
-    TurnOnDisplay();
-}
+//     for(i=0; i<240; i++) {
+//         for(k = 4 ; k < 8; k ++) {
+//             for(j = 0 ; j < 100; j ++) {
+//                 SendData((Color_seven[k]<<4) |Color_seven[k]);
+//             }
+//         }
+//     }
+//     TurnOnDisplay();
+// }
 
 /******************************************************************************
 function :  Draw a block of solid pixels. Requires start code beforehand

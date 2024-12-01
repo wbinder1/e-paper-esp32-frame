@@ -1,7 +1,7 @@
 #include <SPI.h>
 #include <FS.h>
 #include <SD.h>
-#include "epd7in3f.h"
+#include "epd7in3e.h"
 #include <Preferences.h>
 #include <algorithm>
 #include <vector>
@@ -24,14 +24,13 @@ uint16_t height() { return EPD_HEIGHT; }
 SPIClass vspi(VSPI); // VSPI for SD card
 
 // Color pallete for dithering. These are specific to the 7in3f waveshare display.
-uint8_t colorPallete[7*3] = {
+uint8_t colorPallete[6*3] = {
 	0, 0, 0,
 	255, 255, 255,
-	67, 138, 28,
-	100, 64, 255,
-	191, 0, 0,
-	255, 243, 56,
-	232, 126, 0,
+	255, 255, 0,
+	255, 0, 0,
+	0, 0, 255,
+	0, 255, 0
 };
 
 uint16_t read16(fs::File &f) {
@@ -349,7 +348,7 @@ bool drawBmp(const char *filename) {
 
   epd.SendCommand(0x10); // start data frame
 
-  epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_7IN3F_WHITE); // fill area on top of pic white
+  epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_7IN3E_WHITE); // fill area on top of pic white
   
   // row is decremented as the BMP image is drawn bottom up
   bmpFS.read(lineBuffer, sizeof(lineBuffer));
@@ -360,7 +359,7 @@ bool drawBmp(const char *filename) {
   batteryVolts = batteryVolts * 1.69657;
 
   for (row = h-1; row >= 0; row--) {
-    epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3F_WHITE); // fill area on the left of pic white
+    epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3E_WHITE); // fill area on the left of pic white
     
     if(row != 0){
       bmpFS.read(nextLineBuffer, sizeof(nextLineBuffer));
@@ -433,34 +432,28 @@ bool drawBmp(const char *filename) {
       // Set the color based on the indexColor
       switch (indexColor){
         case 0:
-          color = EPD_7IN3F_BLACK;
+          color = EPD_7IN3E_BLACK;
           break;
         case 1:
-          color = EPD_7IN3F_WHITE;
+          color = EPD_7IN3E_WHITE;
           break;
         case 2:
-          color = EPD_7IN3F_GREEN;
+          color = EPD_7IN3E_YELLOW;
           break;
         case 3:
-          color = EPD_7IN3F_BLUE;
+          color = EPD_7IN3E_RED;
           break;
         case 4:
-          color = EPD_7IN3F_RED;
+          color = EPD_7IN3E_BLUE;
           break;
         case 5:
-          color = EPD_7IN3F_YELLOW;
-          break;
-        case 6:
-          color = EPD_7IN3F_ORANGE;
-          break;
-        case 7:
-          color = EPD_7IN3F_WHITE;
+          color = EPD_7IN3E_GREEN;
           break;
       }
 
       // Set the color in the bottom right based on the battery voltage
       if (batteryVolts <= 3500 && batteryVolts >=1000 && col <= 50 && row >= h-50){
-        color = EPD_7IN3F_RED;
+        color = EPD_7IN3E_RED;
       }
 
       // Vodoo magic i don't understand
@@ -473,11 +466,11 @@ bool drawBmp(const char *filename) {
       }
     }
 
-    epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3F_WHITE); // fill area on the right of pic white
+    epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3E_WHITE); // fill area on the right of pic white
     memcpy(lineBuffer, nextLineBuffer, sizeof(lineBuffer));
   }
 
-  epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_7IN3F_WHITE); // fill area below the pic white
+  epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_7IN3E_WHITE); // fill area below the pic white
 
   bmpFS.close(); // Close the file
   epd.TurnOnDisplay(); // Turn on the display
