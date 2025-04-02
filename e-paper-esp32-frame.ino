@@ -52,9 +52,6 @@ uint32_t read32(fs::File &f) {
 void setup() {
   Serial.begin(115200);
   delta = millis();
-
-  // Set the analog read resolution to 12 bits for the battery voltage
-  analogReadResolution(12);   
   
   preferences.begin("e-paper", false);
 
@@ -70,7 +67,7 @@ void setup() {
   // Turn on the transistor to power the external components
   pinMode(TRANSISTOR_PIN, OUTPUT);
   digitalWrite(TRANSISTOR_PIN, HIGH); 
-  delay(10);
+  delay(100);
 
   // Initialize the SD card
   while(!SD.begin(SD_CS_PIN, vspi)){
@@ -355,9 +352,6 @@ bool drawBmp(const char *filename) {
   //reverse linBuffer with the alorithm library 
   std::reverse(lineBuffer, lineBuffer + sizeof(lineBuffer));
 
-  int batteryVolts = analogReadMilliVolts(0);
-  batteryVolts = batteryVolts * 1.69657;
-
   for (row = h-1; row >= 0; row--) {
     epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3E_WHITE); // fill area on the left of pic white
     
@@ -449,11 +443,6 @@ bool drawBmp(const char *filename) {
         case 5:
           color = EPD_7IN3E_GREEN;
           break;
-      }
-
-      // Set the color in the bottom right based on the battery voltage
-      if (batteryVolts <= 3500 && batteryVolts >=1000 && col <= 50 && row >= h-50){
-        color = EPD_7IN3E_RED;
       }
 
       // Vodoo magic i don't understand
