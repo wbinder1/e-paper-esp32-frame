@@ -463,6 +463,7 @@ bool drawBmp(const char *filename) {
 
   bmpFS.close(); // Close the file
   epd.TurnOnDisplay(); // Turn on the display
+  epd.Sleep(); // Put the display to sleep
   return true;
 }
 
