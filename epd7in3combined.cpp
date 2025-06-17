@@ -30,7 +30,7 @@
 ******************************************************************************/
 
 #include <stdlib.h>
-#include "epd7in3e.h"
+#include "epd7in3combined.h"
 
 Epd::~Epd() {
 };

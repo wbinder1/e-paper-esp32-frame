@@ -43,7 +43,7 @@
 #define UDOUBLE  unsigned long
 
 /**********************************
-Color Index
+Color Index for EPD_7IN3E
 **********************************/
 #define EPD_7IN3E_BLACK   0x0   /// 000
 #define EPD_7IN3E_WHITE   0x1   /// 001
@@ -52,6 +52,32 @@ Color Index
 // #define EPD_7IN3E_ORANGE  0x4   /// 100
 #define EPD_7IN3E_BLUE    0x5   /// 101
 #define EPD_7IN3E_GREEN   0x6   /// 110
+
+/**********************************
+Color Index for EPD_7IN3F
+**********************************/
+#define EPD_7IN3F_BLACK   0x0	/// 000
+#define EPD_7IN3F_WHITE   0x1	///	001
+#define EPD_7IN3F_GREEN   0x2	///	010
+#define EPD_7IN3F_BLUE    0x3	///	011
+#define EPD_7IN3F_RED     0x4	///	100
+#define EPD_7IN3F_YELLOW  0x5	///	101
+#define EPD_7IN3F_ORANGE  0x6	///	110
+#define EPD_7IN3F_CLEAN   0x7
+
+//Which display type to use
+// #define DISPLAY_TYPE_F
+#define DISPLAY_TYPE_E
+
+#if defined(DISPLAY_TYPE_F)
+    #define EPD_WHITE EPD_7IN3F_WHITE
+    #define EPD_RED EPD_7IN3F_RED
+#elif defined(DISPLAY_TYPE_E)
+    #define EPD_WHITE EPD_7IN3E_WHITE
+    #define EPD_RED EPD_7IN3E_RED
+#endif
+
+
 
 class Epd : EpdIf {
 public:

@@ -1,11 +1,13 @@
 #include <SPI.h>
 #include <FS.h>
 #include <SD.h>
-#include "epd7in3e.h"
+#include "epd7in3combined.h"
 #include <Preferences.h>
 #include <algorithm>
 #include <vector>
 #include "time_utils.h"
+#include "esp_adc_cal.h"
+#include "driver/adc.h"
 
 //This is the pin for the transistor that powers the external components
 #define TRANSISTOR_PIN 26
@@ -23,15 +25,29 @@ uint16_t height() { return EPD_HEIGHT; }
 
 SPIClass vspi(VSPI); // VSPI for SD card
 
-// Color pallete for dithering. These are specific to the 7in3f waveshare display.
-uint8_t colorPallete[6*3] = {
-	0, 0, 0,
-	255, 255, 255,
-	255, 255, 0,
-	255, 0, 0,
-	0, 0, 255,
-	0, 255, 0
-};
+
+#if defined(DISPLAY_TYPE_E)
+  // Color pallete for dithering. These are specific to the 7in3e waveshare display.
+  uint8_t colorPallete[6*3] = {
+    0, 0, 0,
+    255, 255, 255,
+    255, 255, 0,
+    255, 0, 0,
+    0, 0, 255,
+    0, 255, 0
+  };
+#elif defined(DISPLAY_TYPE_F)
+  // Color pallete for dithering. These are specific to the 7in3f waveshare display.
+  uint8_t colorPallete[7*3] = {
+    0, 0, 0,
+    255, 255, 255,
+    67, 138, 28,
+    100, 64, 255,
+    191, 0, 0,
+    255, 243, 56,
+    232, 126, 0,
+  };
+#endif
 
 uint16_t read16(fs::File &f) {
   uint16_t result;
@@ -47,6 +63,36 @@ uint32_t read32(fs::File &f) {
   ((uint8_t *)&result)[2] = f.read();
   ((uint8_t *)&result)[3] = f.read(); // MSB
   return result;
+}
+
+float readBattery() {
+  uint32_t value = 0;
+  int rounds = 11;
+  esp_adc_cal_characteristics_t adc_chars;
+
+  //battery voltage divided by 2 can be measured at GPIO34, which equals ADC1_CHANNEL6
+  adc1_config_width(ADC_WIDTH_BIT_12);
+  adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_11);
+  switch(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars)) {
+    case ESP_ADC_CAL_VAL_EFUSE_TP:
+      Serial.println("Characterized using Two Point Value");
+      break;
+    case ESP_ADC_CAL_VAL_EFUSE_VREF:
+      Serial.printf("Characterized using eFuse Vref (%d mV)\r\n", adc_chars.vref);
+      break;
+    default:
+      Serial.printf("Characterized using Default Vref (%d mV)\r\n", 1100);
+  }
+
+  //to avoid noise, sample the pin several times and average the result
+  for(int i=1; i<=rounds; i++) {
+    value += adc1_get_raw(ADC1_CHANNEL_6);
+  }
+  value /= (uint32_t)rounds;
+
+  //due to the voltage divider (1M+1M) values must be multiplied by 2
+  //and convert mV to V
+  return esp_adc_cal_raw_to_voltage(value, &adc_chars)*2.0/1000.0;
 }
 
 void setup() {
@@ -345,15 +391,18 @@ bool drawBmp(const char *filename) {
 
   epd.SendCommand(0x10); // start data frame
 
-  epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_7IN3E_WHITE); // fill area on top of pic white
+  epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_WHITE); // fill area on top of pic white
   
   // row is decremented as the BMP image is drawn bottom up
   bmpFS.read(lineBuffer, sizeof(lineBuffer));
   //reverse linBuffer with the alorithm library 
   std::reverse(lineBuffer, lineBuffer + sizeof(lineBuffer));
 
+  float batteryVolts = readBattery();
+  Serial.println("Battery voltage: " + String(batteryVolts) + "V");
+
   for (row = h-1; row >= 0; row--) {
-    epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3E_WHITE); // fill area on the left of pic white
+    epd.EPD_7IN3F_Draw_Blank(1, x, EPD_WHITE); // fill area on the left of pic white
     
     if(row != 0){
       bmpFS.read(nextLineBuffer, sizeof(nextLineBuffer));
@@ -425,24 +474,75 @@ bool drawBmp(const char *filename) {
 
       // Set the color based on the indexColor
       switch (indexColor){
-        case 0:
-          color = EPD_7IN3E_BLACK;
-          break;
-        case 1:
-          color = EPD_7IN3E_WHITE;
-          break;
-        case 2:
-          color = EPD_7IN3E_YELLOW;
-          break;
-        case 3:
-          color = EPD_7IN3E_RED;
-          break;
-        case 4:
-          color = EPD_7IN3E_BLUE;
-          break;
-        case 5:
-          color = EPD_7IN3E_GREEN;
-          break;
+        #if defined(DISPLAY_TYPE_E)
+          case 0:
+            color = EPD_7IN3E_BLACK;
+            break;
+          case 1:
+            color = EPD_7IN3E_WHITE;
+            break;
+          case 2:
+            color = EPD_7IN3E_YELLOW;
+            break;
+          case 3:
+            color = EPD_7IN3E_RED;
+            break;
+          case 4:
+            color = EPD_7IN3E_BLUE;
+            break;
+          case 5:
+            color = EPD_7IN3E_GREEN;
+            break;
+        #elif defined(DISPLAY_TYPE_F)
+          case 0:
+            color = EPD_7IN3F_BLACK;
+            break;
+          case 1:
+            color = EPD_7IN3F_WHITE;
+            break;
+          case 2:
+            color = EPD_7IN3F_GREEN;
+            break;
+          case 3:
+            color = EPD_7IN3F_BLUE;
+            break;
+          case 4:
+            color = EPD_7IN3F_RED;
+            break;
+          case 5:
+            color = EPD_7IN3F_YELLOW;
+            break;
+          case 6:
+            color = EPD_7IN3F_ORANGE;
+            break;
+          case 7:
+            color = EPD_7IN3F_WHITE;
+            break;
+        #endif
+      }
+
+      if (batteryVolts <= 3.3 && col <= 50 && row >= h-50){
+        color = EPD_RED;
+        if (batteryVolts < 3.1) {
+          Serial.println("Battery critically low, hibernating...");
+
+          //switch off everything that might consume power
+          esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_OFF);
+          esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_OFF);
+          esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_OFF);
+          esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_OFF);
+          esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
+          //esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_OFF);
+
+          //disable all wakeup sources
+          esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+
+          digitalWrite(2, LOW);
+          esp_deep_sleep_start();
+
+          Serial.println("This should never get printed");
+          return false;
+        }
       }
 
       // Vodoo magic i don't understand
@@ -455,11 +555,11 @@ bool drawBmp(const char *filename) {
       }
     }
 
-    epd.EPD_7IN3F_Draw_Blank(1, x, EPD_7IN3E_WHITE); // fill area on the right of pic white
+    epd.EPD_7IN3F_Draw_Blank(1, x, EPD_WHITE); // fill area on the right of pic white
     memcpy(lineBuffer, nextLineBuffer, sizeof(lineBuffer));
   }
 
-  epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_7IN3E_WHITE); // fill area below the pic white
+  epd.EPD_7IN3F_Draw_Blank(y, width(), EPD_WHITE); // fill area below the pic white
 
   bmpFS.close(); // Close the file
   epd.TurnOnDisplay(); // Turn on the display
