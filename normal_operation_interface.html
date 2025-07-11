@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-Paper Frame - Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 500px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .status-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .status-value {
+            color: #333;
+        }
+        .status-online {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-offline {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .battery-good {
+            color: #28a745;
+        }
+        .battery-warning {
+            color: #ffc107;
+        }
+        .battery-low {
+            color: #dc3545;
+        }
+        .controls {
+            margin-top: 30px;
+        }
+        .control-group {
+            margin-bottom: 20px;
+        }
+        .control-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: bold;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .info-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .preview-note {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .image-info {
+            background: #e2e3e5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .next-image {
+            font-weight: bold;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="preview-note">
+            📱 <strong>Normal Operation Interface</strong> - What users see after WiFi setup
+        </div>
+        
+        <h1>🖼️ E-Paper Frame Status</h1>
+        
+        <div class="status-card">
+            <h3>📊 System Status</h3>
+            <div class="status-item">
+                <span class="status-label">WiFi Connection:</span>
+                <span class="status-value status-online">Connected</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">IP Address:</span>
+                <span class="status-value">192.168.1.105</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Signal Strength:</span>
+                <span class="status-value">-45 dBm (Excellent)</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Battery Level:</span>
+                <span class="status-value battery-good">3.8V (Good)</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Uptime:</span>
+                <span class="status-value">2 days, 14 hours</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Last Update:</span>
+                <span class="status-value">Today at 9:00 AM</span>
+            </div>
+        </div>
+
+        <div class="image-info">
+            <h3>🖼️ Current Display</h3>
+            <div class="status-item">
+                <span class="status-label">Current Image:</span>
+                <span class="status-value">001_15.12.2024_family_photo.bmp</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Next Image:</span>
+                <span class="status-value next-image">002_16.12.2024_sunset.bmp</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Next Update:</span>
+                <span class="status-value">Tomorrow at 9:00 AM</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Images on SD Card:</span>
+                <span class="status-value">24 files</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h3>⚙️ Controls</h3>
+            
+            <div class="control-group">
+                <label class="control-label">Display Controls:</label>
+                <button onclick="refreshDisplay()">🔄 Refresh Display</button>
+                <button class="btn-secondary" onclick="nextImage()">⏭️ Show Next Image</button>
+                <button class="btn-secondary" onclick="previousImage()">⏮️ Show Previous Image</button>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">System Controls:</label>
+                <button class="btn-success" onclick="checkForUpdates()">🔄 Check for Updates</button>
+                <button class="btn-warning" onclick="restartDevice()">🔄 Restart Device</button>
+                <button class="btn-danger" onclick="resetWiFi()">🔌 Reset WiFi Settings</button>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Tip:</strong> The e-paper display only updates when needed to save battery. 
+            Manual refresh will update the display immediately but use more power.
+        </div>
+    </div>
+
+    <script>
+        function refreshDisplay() {
+            showMessage('Refreshing display...', 'info');
+            // Simulate API call
+            setTimeout(() => {
+                showMessage('Display refreshed successfully!', 'success');
+            }, 2000);
+        }
+
+        function nextImage() {
+            showMessage('Loading next image...', 'info');
+            setTimeout(() => {
+                showMessage('Next image displayed!', 'success');
+            }, 1500);
+        }
+
+        function previousImage() {
+            showMessage('Loading previous image...', 'info');
+            setTimeout(() => {
+                showMessage('Previous image displayed!', 'success');
+            }, 1500);
+        }
+
+        function checkForUpdates() {
+            showMessage('Checking for updates...', 'info');
+            setTimeout(() => {
+                showMessage('No updates available. Device is up to date!', 'success');
+            }, 2000);
+        }
+
+        function restartDevice() {
+            if (confirm('Are you sure you want to restart the device? This will disconnect you temporarily.')) {
+                showMessage('Restarting device...', 'warning');
+                setTimeout(() => {
+                    showMessage('Device is restarting. Please wait...', 'warning');
+                }, 1000);
+            }
+        }
+
+        function resetWiFi() {
+            if (confirm('This will reset WiFi settings and put the device back into setup mode. Continue?')) {
+                showMessage('Resetting WiFi settings...', 'warning');
+                setTimeout(() => {
+                    showMessage('WiFi settings reset. Device will restart in setup mode.', 'warning');
+                }, 2000);
+            }
+        }
+
+        function showMessage(message, type) {
+            // Create a temporary message display
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: bold;
+                z-index: 1000;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            switch(type) {
+                case 'success':
+                    messageDiv.style.background = '#28a745';
+                    break;
+                case 'warning':
+                    messageDiv.style.background = '#ffc107';
+                    messageDiv.style.color = '#333';
+                    break;
+                case 'error':
+                    messageDiv.style.background = '#dc3545';
+                    break;
+                default:
+                    messageDiv.style.background = '#17a2b8';
+            }
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    document.body.removeChild(messageDiv);
+                }, 300);
+            }, 3000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Update time every minute
+        setInterval(() => {
+            const now = new Date();
+            const uptimeElement = document.querySelector('.status-item:nth-child(5) .status-value');
+            if (uptimeElement) {
+                const hours = Math.floor(now.getTime() / 1000 / 60 / 60);
+                const days = Math.floor(hours / 24);
+                const remainingHours = hours % 24;
+                uptimeElement.textContent = `${days} days, ${remainingHours} hours`;
+            }
+        }, 60000);
+    </script>
+</body>
+</html> 

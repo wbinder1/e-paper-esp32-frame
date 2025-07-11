@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-Paper Frame Setup - Preview</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .networks {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .network-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .network-item:hover {
+            background-color: #f8f9fa;
+        }
+        .network-item:last-child {
+            border-bottom: none;
+        }
+        .refresh-btn {
+            background: #28a745;
+            margin-bottom: 10px;
+        }
+        .preview-note {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="preview-note">
+            📱 <strong>Preview Mode</strong> - Users will access this at <strong>http://frame.local</strong>
+        </div>
+        
+        <h1>📱 E-Paper Frame Setup</h1>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <form id="wifiForm">
+            <div class="form-group">
+                <label for="ssid">WiFi Network:</label>
+                <button type="button" class="refresh-btn" onclick="scanNetworks()">🔄 Scan Networks</button>
+                <div id="networks" class="networks" style="display: none;"></div>
+                <input type="text" id="ssid" name="ssid" placeholder="Enter WiFi network name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter WiFi password" required>
+            </div>
+            
+            <button type="submit">Connect to WiFi</button>
+        </form>
+    </div>
+
+    <script>
+        // Mock data for preview
+        const mockNetworks = [
+            { ssid: "HomeWiFi", rssi: -45, encryption: 3 },
+            { ssid: "Neighbor_Network", rssi: -67, encryption: 3 },
+            { ssid: "Office_WiFi", rssi: -72, encryption: 3 },
+            { ssid: "Guest_Network", rssi: -78, encryption: 2 },
+            { ssid: "Cafe_Free_WiFi", rssi: -82, encryption: 0 }
+        ];
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+        }
+
+        function scanNetworks() {
+            showStatus('Scanning for networks...', 'loading');
+            
+            // Simulate network scanning delay
+            setTimeout(() => {
+                const networksDiv = document.getElementById('networks');
+                networksDiv.innerHTML = '';
+                
+                mockNetworks.forEach(network => {
+                    const item = document.createElement('div');
+                    item.className = 'network-item';
+                    item.textContent = network.ssid + ' (' + network.rssi + ' dBm)';
+                    item.onclick = () => {
+                        document.getElementById('ssid').value = network.ssid;
+                        networksDiv.style.display = 'none';
+                    };
+                    networksDiv.appendChild(item);
+                });
+                networksDiv.style.display = 'block';
+                showStatus('Found ' + mockNetworks.length + ' networks', 'success');
+            }, 1500);
+        }
+
+        document.getElementById('wifiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const ssid = formData.get('ssid');
+            const password = formData.get('password');
+            
+            showStatus('Connecting to WiFi...', 'loading');
+            
+            // Simulate connection attempt
+            setTimeout(() => {
+                if (ssid && password) {
+                    showStatus('Connected successfully! Device will restart...', 'success');
+                    setTimeout(() => {
+                        showStatus('Restarting device...', 'loading');
+                    }, 2000);
+                } else {
+                    showStatus('Please enter both network name and password', 'error');
+                }
+            }, 2000);
+        });
+
+        // Auto-scan on page load
+        window.onload = function() {
+            scanNetworks();
+        };
+    </script>
+</body>
+</html> 

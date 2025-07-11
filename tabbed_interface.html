@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Picture Frame - Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #6c757d;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        .tab:hover {
+            background: #e9ecef;
+        }
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .status-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .status-value {
+            color: #333;
+        }
+        .status-online {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-offline {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .battery-good { color: #28a745; }
+        .battery-warning { color: #ffc107; }
+        .battery-low { color: #dc3545; }
+        
+        button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .btn-secondary { background: #6c757d; }
+        .btn-success { background: #28a745; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-danger { background: #dc3545; }
+        .btn-small { padding: 8px 12px; font-size: 12px; }
+        
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #e9ecef;
+        }
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .image-item {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            background: white;
+            transition: all 0.3s;
+        }
+        .image-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .image-item.current {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .image-preview {
+            width: 100%;
+            height: 120px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .image-info {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .info-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            position: relative;
+        }
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+        .toast.success { background: #28a745; }
+        .toast.warning { background: #ffc107; color: #333; }
+        .toast.error { background: #dc3545; }
+        .toast.info { background: #17a2b8; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .preview-note {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖼️ Smart Picture Frame Dashboard</h1>
+        </div>
+        
+        <div class="preview-note">
+            📱 <strong>Tabbed Interface Preview</strong> - Complete web dashboard for e-paper frame management
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('home', event)">🏠 Home</button>
+            <button class="tab" onclick="showTab('upload', event)">📤 Upload</button>
+            <button class="tab" onclick="showTab('live', event)">🖼️ Live Image</button>
+            <button class="tab" onclick="showTab('manage', event)">📁 Image Management</button>
+            <button class="tab" onclick="showTab('settings', event)">⚙️ Settings</button>
+        </div>
+        
+        <!-- Home Tab -->
+        <div id="home" class="tab-content active">
+            <h2>📊 System Overview</h2>
+            
+            <div class="status-card">
+                <h3>🔌 Connection Status</h3>
+                <div class="status-item">
+                    <span class="status-label">WiFi Connection:</span>
+                    <span class="status-value status-online">Connected</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">IP Address:</span>
+                    <span class="status-value">192.168.1.105</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Signal Strength:</span>
+                    <span class="status-value">-45 dBm (Excellent)</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Network:</span>
+                    <span class="status-value">HomeWiFi</span>
+                </div>
+            </div>
+            
+            <div class="status-card">
+                <h3>🔋 Device Status</h3>
+                <div class="status-item">
+                    <span class="status-label">Battery Level:</span>
+                    <span class="status-value battery-good">3.8V (Good)</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Uptime:</span>
+                    <span class="status-value">2 days, 14 hours</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Last Update:</span>
+                    <span class="status-value">Today at 9:00 AM</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Next Update:</span>
+                    <span class="status-value">Tomorrow at 9:00 AM</span>
+                </div>
+            </div>
+            
+            <div class="status-card">
+                <h3>🖼️ Display Info</h3>
+                <div class="status-item">
+                    <span class="status-label">Current Image:</span>
+                    <span class="status-value">001_15.12.2024_family_photo.bmp</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Images on SD Card:</span>
+                    <span class="status-value">24 files</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">SD Card Free Space:</span>
+                    <span class="status-value">2.1 GB</span>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <strong>💡 Quick Actions:</strong>
+                <button onclick="refreshDisplay()">🔄 Refresh Display</button>
+                <button class="btn-secondary" onclick="restartDevice()">🔄 Restart Device</button>
+                <button class="btn-warning" onclick="checkForUpdates()">🔄 Check Updates</button>
+            </div>
+        </div>
+        
+        <!-- Upload Tab -->
+        <div id="upload" class="tab-content">
+            <h2>📤 Upload Images</h2>
+            
+            <div class="upload-area" id="uploadArea">
+                <div style="font-size: 48px; margin-bottom: 20px;">📁</div>
+                <h3>Drag & Drop Images Here</h3>
+                <p>or click to select files</p>
+                <p style="font-size: 12px; color: #666;">Supports: JPG, PNG, BMP (max 5MB each)</p>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+            </div>
+            
+            <div class="form-group">
+                <label>Upload Options:</label>
+                <div style="margin-top: 10px;">
+                    <input type="checkbox" id="autoResize" checked> 
+                    <label for="autoResize" style="display: inline;">Auto-resize to 800x480</label>
+                </div>
+                <div style="margin-top: 10px;">
+                    <input type="checkbox" id="optimizeColors" checked> 
+                    <label for="optimizeColors" style="display: inline;">Optimize for e-paper colors</label>
+                </div>
+            </div>
+            
+            <div id="uploadProgress" style="display: none;">
+                <h4 id="progressTitle">Uploading...</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">0%</p>
+                <p id="progressFile">No file selected</p>
+            </div>
+            
+            <div id="convertProgress" style="display: none;">
+                <h4 id="convertTitle">Converting...</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="convertFill"></div>
+                </div>
+                <p id="convertText">0%</p>
+                <p id="convertFile">Processing...</p>
+            </div>
+            
+            <div id="uploadedFiles" style="display: none;">
+                <h4>Uploaded Files:</h4>
+                <div id="uploadedList"></div>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ Note:</strong> Images will be automatically converted to BMP format and optimized for the e-paper display. 
+                The original files will be deleted after successful conversion to save storage space.
+            </div>
+        </div>
+        
+        <!-- Live Image Tab -->
+        <div id="live" class="tab-content">
+            <h2>🖼️ Live Image Control</h2>
+            
+            <div class="status-card">
+                <h3>Current Display</h3>
+                <div class="status-item">
+                    <span class="status-label">Currently Showing:</span>
+                    <span class="status-value">001_15.12.2024_family_photo.bmp</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Display Time:</span>
+                    <span class="status-value">2 hours, 15 minutes</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="imageSelect">Select New Image:</label>
+                <select id="imageSelect">
+                    <option value="">-- Select an image --</option>
+                    <option value="001_15.12.2024_family_photo.bmp">001_15.12.2024_family_photo.bmp</option>
+                    <option value="002_16.12.2024_sunset.bmp">002_16.12.2024_sunset.bmp</option>
+                    <option value="003_17.12.2024_mountain.bmp">003_17.12.2024_mountain.bmp</option>
+                    <option value="004_18.12.2024_beach.bmp">004_18.12.2024_beach.bmp</option>
+                </select>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="setLiveImage()">🖼️ Set as Live Image</button>
+                <button class="btn-secondary" onclick="previewImage()">👁️ Preview</button>
+            </div>
+            
+            <div class="info-box">
+                <strong>💡 Tip:</strong> Setting a new live image will immediately update the e-paper display. 
+                This bypasses the normal schedule and shows your selected image right away.
+            </div>
+        </div>
+        
+        <!-- Image Management Tab -->
+        <div id="manage" class="tab-content">
+            <h2>📁 Image Management</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <button onclick="refreshImageList()">🔄 Refresh List</button>
+                <button class="btn-secondary" onclick="selectAllImages()">☑️ Select All</button>
+                <button class="btn-danger" onclick="deleteSelectedImages()">🗑️ Delete Selected</button>
+            </div>
+            
+            <div class="image-grid" id="imageGrid">
+                <div class="image-item current">
+                    <div class="image-preview">📷</div>
+                    <div class="image-info">001_15.12.2024_family_photo.bmp</div>
+                    <div class="image-info">Current • 2.3 MB</div>
+                    <input type="checkbox" checked> Select
+                    <button class="btn-small btn-danger" onclick="deleteImage('001_15.12.2024_family_photo.bmp')">Delete</button>
+                </div>
+                
+                <div class="image-item">
+                    <div class="image-preview">📷</div>
+                    <div class="image-info">002_16.12.2024_sunset.bmp</div>
+                    <div class="image-info">Next • 1.8 MB</div>
+                    <input type="checkbox"> Select
+                    <button class="btn-small btn-danger" onclick="deleteImage('002_16.12.2024_sunset.bmp')">Delete</button>
+                </div>
+                
+                <div class="image-item">
+                    <div class="image-preview">📷</div>
+                    <div class="image-info">003_17.12.2024_mountain.bmp</div>
+                    <div class="image-info">1.9 MB</div>
+                    <input type="checkbox"> Select
+                    <button class="btn-small btn-danger" onclick="deleteImage('003_17.12.2024_mountain.bmp')">Delete</button>
+                </div>
+                
+                <div class="image-item">
+                    <div class="image-preview">📷</div>
+                    <div class="image-info">004_18.12.2024_beach.bmp</div>
+                    <div class="image-info">2.1 MB</div>
+                    <input type="checkbox"> Select
+                    <button class="btn-small btn-danger" onclick="deleteImage('004_18.12.2024_beach.bmp')">Delete</button>
+                </div>
+            </div>
+            
+            <div class="warning-box">
+                <strong>⚠️ Warning:</strong> Deleting images is permanent and cannot be undone. 
+                Make sure you want to remove these images before confirming.
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <h2>⚙️ Settings</h2>
+            
+            <div class="status-card">
+                <h3>🌐 WiFi Configuration</h3>
+                <div class="form-group">
+                    <label for="wifiNetwork">Current Network:</label>
+                    <input type="text" id="wifiNetwork" value="HomeWiFi" readonly>
+                </div>
+                <button class="btn-warning" onclick="changeWiFi()">🔌 Change WiFi Network</button>
+                <button class="btn-danger" onclick="resetWiFi()">🗑️ Reset WiFi Settings</button>
+            </div>
+            
+            <div class="status-card">
+                <h3>⏰ Display Schedule</h3>
+                <div class="form-group">
+                    <label for="updateTime">Daily Update Time:</label>
+                    <input type="time" id="updateTime" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label for="updateInterval">Update Interval:</label>
+                    <select id="updateInterval">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <button onclick="saveSchedule()">💾 Save Schedule</button>
+            </div>
+            
+            <div class="status-card">
+                <h3>🔋 Power Management</h3>
+                <div class="form-group">
+                    <label for="sleepMode">Sleep Mode:</label>
+                    <select id="sleepMode">
+                        <option value="deep">Deep Sleep (Maximum Battery)</option>
+                        <option value="light">Light Sleep (Faster Wake)</option>
+                        <option value="none">No Sleep (Always On)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="batteryThreshold">Low Battery Warning:</label>
+                    <select id="batteryThreshold">
+                        <option value="3.0">3.0V</option>
+                        <option value="3.1" selected>3.1V</option>
+                        <option value="3.2">3.2V</option>
+                        <option value="3.3">3.3V</option>
+                    </select>
+                </div>
+                <button onclick="savePowerSettings()">💾 Save Power Settings</button>
+            </div>
+            
+            <div class="status-card">
+                <h3>🔄 System</h3>
+                <button onclick="checkForUpdates()">🔄 Check for Updates</button>
+                <button class="btn-warning" onclick="restartDevice()">🔄 Restart Device</button>
+                <button class="btn-danger" onclick="factoryReset()">🗑️ Factory Reset</button>
+            </div>
+            
+            <div class="info-box">
+                <strong>💡 Note:</strong> Some settings changes require a device restart to take effect. 
+                The device will automatically restart after saving certain settings.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        function showTab(tabName, event) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        }
+        
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Upload functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            const fileArray = Array.from(files);
+            let currentFileIndex = 0;
+            
+            function processNextFile() {
+                if (currentFileIndex >= fileArray.length) {
+                    // All files processed
+                    showToast(`Successfully processed ${fileArray.length} file(s)!`, 'success');
+                    document.getElementById('uploadProgress').style.display = 'none';
+                    document.getElementById('convertProgress').style.display = 'none';
+                    
+                    // Show uploaded files
+                    const uploadedDiv = document.getElementById('uploadedFiles');
+                    const uploadedList = document.getElementById('uploadedList');
+                    uploadedList.innerHTML = '';
+                    
+                    fileArray.forEach(file => {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.style.cssText = 'padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 4px; background: #d4edda;';
+                        fileDiv.innerHTML = `✅ ${file.name} → ${file.name.replace(/\.[^/.]+$/, '.bmp')} (${(file.size / 1024 / 1024).toFixed(2)} MB → ~${(file.size / 1024 / 1024 * 0.8).toFixed(2)} MB)`;
+                        uploadedList.appendChild(fileDiv);
+                    });
+                    
+                    uploadedDiv.style.display = 'block';
+                    return;
+                }
+                
+                const file = fileArray[currentFileIndex];
+                uploadAndConvertFile(file, () => {
+                    currentFileIndex++;
+                    processNextFile();
+                });
+            }
+            
+            processNextFile();
+        }
+        
+        function uploadAndConvertFile(file, onComplete) {
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const progressFile = document.getElementById('progressFile');
+            const progressTitle = document.getElementById('progressTitle');
+            
+            const convertDiv = document.getElementById('convertProgress');
+            const convertFill = document.getElementById('convertFill');
+            const convertText = document.getElementById('convertText');
+            const convertFile = document.getElementById('convertFile');
+            const convertTitle = document.getElementById('convertTitle');
+            
+            // Start upload
+            progressDiv.style.display = 'block';
+            convertDiv.style.display = 'none';
+            progressTitle.textContent = 'Uploading...';
+            progressFile.textContent = file.name;
+            
+            let uploadProgress = 0;
+            const uploadStages = [
+                { progress: 30, message: 'Preparing upload...' },
+                { progress: 70, message: 'Transferring data...' },
+                { progress: 90, message: 'Verifying file...' },
+                { progress: 100, message: 'Upload complete!' }
+            ];
+            
+            let currentUploadStage = 0;
+            const uploadInterval = setInterval(() => {
+                const targetProgress = uploadStages[currentUploadStage].progress;
+                const stageMessage = uploadStages[currentUploadStage].message;
+                
+                if (uploadProgress < targetProgress) {
+                    uploadProgress += 3; // Smooth progress
+                } else {
+                    currentUploadStage++;
+                    if (currentUploadStage >= uploadStages.length) {
+                        clearInterval(uploadInterval);
+                        
+                                            // Upload complete, start conversion
+                    progressDiv.style.display = 'none';
+                    convertDiv.style.display = 'block';
+                    convertTitle.textContent = 'Converting...';
+                    convertFile.textContent = file.name;
+                    
+                    let convertProgress = 0;
+                    const convertStages = [
+                        { progress: 20, message: 'Analyzing image...' },
+                        { progress: 40, message: 'Resizing to 800x480...' },
+                        { progress: 60, message: 'Optimizing colors...' },
+                        { progress: 80, message: 'Converting to BMP...' },
+                        { progress: 95, message: 'Saving to SD card...' },
+                        { progress: 100, message: 'Cleaning up...' }
+                    ];
+                    
+                    let currentStage = 0;
+                    const convertInterval = setInterval(() => {
+                        const targetProgress = convertStages[currentStage].progress;
+                        const stageMessage = convertStages[currentStage].message;
+                        
+                        if (convertProgress < targetProgress) {
+                            convertProgress += 2; // Smooth progress
+                        } else {
+                            currentStage++;
+                            if (currentStage >= convertStages.length) {
+                                clearInterval(convertInterval);
+                                
+                                // Conversion complete
+                                setTimeout(() => {
+                                    convertDiv.style.display = 'none';
+                                    showToast(`✅ ${file.name} uploaded and converted successfully!`, 'success');
+                                    onComplete();
+                                }, 500);
+                                return;
+                            }
+                        }
+                        
+                        convertFill.style.width = convertProgress + '%';
+                        convertText.textContent = Math.round(convertProgress) + '%';
+                        convertFile.textContent = `${file.name} - ${stageMessage}`;
+                    }, 100);
+                }
+                
+                progressFill.style.width = uploadProgress + '%';
+                progressText.textContent = Math.round(uploadProgress) + '%';
+                progressFile.textContent = `${file.name} - ${stageMessage}`;
+            }, 100);
+        }
+        
+        // Live image functionality
+        function setLiveImage() {
+            const select = document.getElementById('imageSelect');
+            if (select.value) {
+                showToast(`Setting ${select.value} as live image...`, 'info');
+                setTimeout(() => {
+                    showToast('Live image updated successfully!', 'success');
+                }, 1500);
+            } else {
+                showToast('Please select an image first', 'error');
+            }
+        }
+        
+        function previewImage() {
+            const select = document.getElementById('imageSelect');
+            if (select.value) {
+                showToast(`Previewing ${select.value}...`, 'info');
+            } else {
+                showToast('Please select an image first', 'error');
+            }
+        }
+        
+        // Image management functionality
+        function refreshImageList() {
+            showToast('Refreshing image list...', 'info');
+            setTimeout(() => {
+                showToast('Image list refreshed!', 'success');
+            }, 1000);
+        }
+        
+        function selectAllImages() {
+            const checkboxes = document.querySelectorAll('#imageGrid input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = true);
+            showToast('All images selected', 'info');
+        }
+        
+        function deleteSelectedImages() {
+            const checkboxes = document.querySelectorAll('#imageGrid input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                showToast('No images selected', 'error');
+                return;
+            }
+            
+            if (confirm(`Delete ${checkboxes.length} selected image(s)?`)) {
+                showToast(`Deleting ${checkboxes.length} image(s)...`, 'warning');
+                setTimeout(() => {
+                    showToast('Images deleted successfully!', 'success');
+                }, 2000);
+            }
+        }
+        
+        function deleteImage(filename) {
+            if (confirm(`Delete ${filename}?`)) {
+                showToast(`Deleting ${filename}...`, 'warning');
+                setTimeout(() => {
+                    showToast('Image deleted successfully!', 'success');
+                }, 1000);
+            }
+        }
+        
+        // Settings functionality
+        function changeWiFi() {
+            if (confirm('This will put the device back into WiFi setup mode. Continue?')) {
+                showToast('Switching to WiFi setup mode...', 'warning');
+            }
+        }
+        
+        function resetWiFi() {
+            if (confirm('This will reset all WiFi settings. Continue?')) {
+                showToast('Resetting WiFi settings...', 'warning');
+            }
+        }
+        
+        function saveSchedule() {
+            showToast('Saving schedule...', 'info');
+            setTimeout(() => {
+                showToast('Schedule saved successfully!', 'success');
+            }, 1000);
+        }
+        
+        function savePowerSettings() {
+            showToast('Saving power settings...', 'info');
+            setTimeout(() => {
+                showToast('Power settings saved!', 'success');
+            }, 1000);
+        }
+        
+        function checkForUpdates() {
+            showToast('Checking for updates...', 'info');
+            setTimeout(() => {
+                showToast('No updates available', 'info');
+            }, 2000);
+        }
+        
+        function restartDevice() {
+            if (confirm('Restart the device? This will disconnect you temporarily.')) {
+                showToast('Restarting device...', 'warning');
+            }
+        }
+        
+        function factoryReset() {
+            if (confirm('This will reset ALL settings to factory defaults. This action cannot be undone. Continue?')) {
+                showToast('Performing factory reset...', 'warning');
+            }
+        }
+        
+        // Home tab functionality
+        function refreshDisplay() {
+            showToast('Refreshing display...', 'info');
+            setTimeout(() => {
+                showToast('Display refreshed!', 'success');
+            }, 2000);
+        }
+        
+        // Update uptime every minute
+        setInterval(() => {
+            const uptimeElement = document.querySelector('.status-item:nth-child(2) .status-value');
+            if (uptimeElement) {
+                const hours = Math.floor(Date.now() / 1000 / 60 / 60);
+                const days = Math.floor(hours / 24);
+                const remainingHours = hours % 24;
+                uptimeElement.textContent = `${days} days, ${remainingHours} hours`;
+            }
+        }, 60000);
+    </script>
+</body>
+</html> 

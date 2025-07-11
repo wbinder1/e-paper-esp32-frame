@@ -1,0 +1,22 @@
+# Required Arduino Libraries for E-Paper Frame WiFi Configuration
+
+# Install these libraries in Arduino IDE:
+# Tools → Manage Libraries → Search and install:
+
+1. ArduinoJson by Benoit Blanchon (version 6.x)
+   - Search: "ArduinoJson"
+   - Version: 6.x (not 5.x)
+   - Used for: JSON parsing in WiFi configuration web interface
+
+# Built-in libraries (included with ESP32 board package):
+2. WebServer
+3. DNSServer
+4. WiFi
+5. Preferences
+
+# Installation Instructions:
+# 1. Open Arduino IDE
+# 2. Go to Tools → Manage Libraries
+# 3. Search for "ArduinoJson"
+# 4. Install version 6.x by Benoit Blanchon
+# 5. Restart Arduino IDE if prompted 

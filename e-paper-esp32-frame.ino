@@ -8,11 +8,14 @@
 #include "time_utils.h"
 #include "esp_adc_cal.h"
 #include "driver/adc.h"
+#include "wifi_config.h"
 
 //This is the pin for the transistor that powers the external components
 #define TRANSISTOR_PIN 26
 
 Preferences preferences;
+WiFiConfig wifiConfig;
+bool wifiSetupMode = false;
 
 Epd epd;
 unsigned long delta; // Variable to store the time it took to update the display for deep sleep calculations
@@ -100,6 +103,7 @@ void setup() {
   delta = millis();
   
   preferences.begin("e-paper", false);
+  wifiConfig.begin();
 
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause();
@@ -119,6 +123,20 @@ void setup() {
   while(!SD.begin(SD_CS_PIN, vspi)){
     Serial.println("Card Mount Failed");
     hibernate();
+  }
+
+  // Check if WiFi is configured
+  if (!wifiConfig.isWiFiConfigured()) {
+    Serial.println("WiFi not configured. Starting setup mode...");
+    startWiFiSetup();
+    return;
+  }
+
+  // Try to connect to WiFi
+  if (!wifiConfig.connectToWiFi()) {
+    Serial.println("WiFi connection failed. Starting setup mode...");
+    startWiFiSetup();
+    return;
   }
 
   // Initialize Wifi and get the time
@@ -147,6 +165,12 @@ void setup() {
 }
 
 void loop() {
+    // If we're in WiFi setup mode, handle the captive portal
+    if (wifiSetupMode) {
+        wifiConfig.handleClient();
+        return;
+    }
+    
     hibernate();
 }
 
@@ -587,4 +611,40 @@ int depalette( uint8_t r, uint8_t g, uint8_t b ){
 		}
 	}
 	return bestc;
+}
+
+void startWiFiSetup() {
+    Serial.println("Starting WiFi setup mode...");
+    wifiSetupMode = true;
+    
+    // Initialize the e-paper display to show setup instructions
+    if (epd.Init() != 0) {
+        Serial.println("eP init F");
+        return;
+    }
+    
+    // Show setup instructions on the e-paper display
+    showSetupInstructions();
+    
+    // Start the captive portal
+    wifiConfig.startCaptivePortal();
+    
+    Serial.println("WiFi setup mode active. Connect to 'E-Paper Frame Setup' network");
+    Serial.println("Then visit http://frame.local to configure WiFi");
+}
+
+void showSetupInstructions() {
+    // Clear the display
+    epd.Clear();
+    
+    // This is a simple text display - you might want to create a proper setup image
+    // For now, we'll just show a basic message
+    Serial.println("Setup mode: Connect to 'E-Paper Frame Setup' WiFi network");
+    Serial.println("Password: 12345678");
+    Serial.println("Then visit: http://frame.local");
+    
+    // You could create a proper setup image here with instructions
+    // For now, we'll just turn on the display
+    epd.TurnOnDisplay();
+    epd.Sleep();
 }
