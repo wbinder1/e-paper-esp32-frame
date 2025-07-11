@@ -1,6 +1,5 @@
 # E-paper ESP32 Frame
 
-> **Note:** Changed the display from Waveshare 7.3inch ACeP 7-Color E-Paper E-Ink Display to Waveshare 7.3inch E Ink Spectra 6 (E6) Full Color E-Paper Display for better image quality
 
 ![ESP e-paper frame](images/e-paper-esp32-frame.jpg?raw=true)
 ![ESP e-paper frame](images/e-paper-esp32-frame-backside.jpg?raw=true)
